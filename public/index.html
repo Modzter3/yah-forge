@@ -44,6 +44,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .tab-btn:hover{color:var(--text-muted);background:rgba(255,255,255,0.02);}
 .tab-btn.active{color:var(--gold);border-bottom-color:var(--gold);}
 .tab-btn i{margin-right:4px;}
+@media(max-width:640px){
+.tab-btn{padding:10px 0;font-size:0.65rem;}
+.tab-btn i{margin-right:0;font-size:1rem;display:block;margin-bottom:3px;}
+.tab-label{display:none;}
+}
 /* TAB PANELS */
 .tab-panel{display:none;position:relative;z-index:1;}
 .tab-panel.active{display:block;}
@@ -431,13 +436,13 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 </div>
 <!-- TABS -->
 <div class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('topics',this)"><i class="fas fa-scroll"></i> Topics</button>
-  <button class="tab-btn" onclick="switchTab('bible',this)"><i class="fas fa-book-bible"></i> Bible</button>
-  <button class="tab-btn" onclick="switchTab('apocrypha',this)"><i class="fas fa-book-skull"></i> Apocrypha</button>
-  <button class="tab-btn" onclick="switchTab('sealed',this)"><i class="fas fa-lock"></i> Sealed Scrolls</button>
-  <button class="tab-btn" onclick="switchTab('library',this)"><i class="fas fa-book-bookmark"></i> Library <span class="lib-count" id="libCountBadge" style="display:none;"></span></button>
-  <button class="tab-btn" onclick="switchTab('dismantle',this)"><i class="fas fa-hammer"></i> Dismantle</button>
-  <button class="tab-btn" onclick="switchTab('news',this)"><i class="fas fa-satellite-dish"></i> News</button>
+  <button class="tab-btn active" onclick="switchTab('topics',this)" title="Topics"><i class="fas fa-scroll"></i><span class="tab-label"> Topics</span></button>
+  <button class="tab-btn" onclick="switchTab('bible',this)" title="Bible"><i class="fas fa-book-bible"></i><span class="tab-label"> Bible</span></button>
+  <button class="tab-btn" onclick="switchTab('apocrypha',this)" title="Apocrypha"><i class="fas fa-book-skull"></i><span class="tab-label"> Apocrypha</span></button>
+  <button class="tab-btn" onclick="switchTab('sealed',this)" title="Sealed Scrolls"><i class="fas fa-lock"></i><span class="tab-label"> Sealed Scrolls</span></button>
+  <button class="tab-btn" onclick="switchTab('library',this)" title="Library"><i class="fas fa-book-bookmark"></i><span class="tab-label"> Library</span> <span class="lib-count" id="libCountBadge" style="display:none;"></span></button>
+  <button class="tab-btn" onclick="switchTab('dismantle',this)" title="Dismantle"><i class="fas fa-hammer"></i><span class="tab-label"> Dismantle</span></button>
+  <button class="tab-btn" onclick="switchTab('news',this)" title="News"><i class="fas fa-satellite-dish"></i><span class="tab-label"> News</span></button>
 </div>
 <!-- TOPICS PANEL -->
 <div class="tab-panel active" id="panelTopics">
