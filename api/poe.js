@@ -4,10 +4,7 @@ const POE_API_BASE = 'https://api.poe.com/bot';
 
 export default async function handler(req) {
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: corsHeaders(),
-    });
+    return new Response(null, { status: 204, headers: corsHeaders() });
   }
 
   if (req.method !== 'POST') {
@@ -16,7 +13,7 @@ export default async function handler(req) {
 
   const apiKey = process.env.POE_API_KEY;
   if (!apiKey) {
-    return jsonError('POE_API_KEY environment variable is not set', 500);
+    return jsonError('POE_API_KEY is not configured in environment variables', 500);
   }
 
   let body;
@@ -32,15 +29,36 @@ export default async function handler(req) {
     return jsonError('Missing required fields: bot, query', 400);
   }
 
-  // Build the Poe API request payload
+  const convId = conversation_id || crypto.randomUUID();
+  const msgId  = crypto.randomUUID();
+
+  // Poe protocol payload — only standard fields at the top level
   const poePayload = {
     version: '1',
     type: 'query',
-    query: [{ role: 'user', content: query }],
-    conversation_id: conversation_id || crypto.randomUUID(),
-    message_id: crypto.randomUUID(),
-    ...buildPoeParameters(parameters),
+    query: [
+      {
+        role: 'user',
+        content: query,
+        content_type: 'text/markdown',
+        timestamp: Date.now() * 1000, // microseconds
+        message_id: msgId,
+        feedback: [],
+        attachments: [],
+      },
+    ],
+    user_id: '',
+    conversation_id: convId,
+    message_id: msgId,
   };
+
+  // Bot-specific parameters go in bot_query_id / metadata — pass only recognised ones
+  if (parameters.music_length_ms !== undefined) poePayload.music_length_ms = parameters.music_length_ms;
+  if (parameters.voice            !== undefined) poePayload.voice            = parameters.voice;
+  if (parameters.aspect_ratio     !== undefined) poePayload.aspect_ratio     = parameters.aspect_ratio;
+  if (parameters.image_only       !== undefined) poePayload.image_only       = parameters.image_only;
+  if (parameters.duration         !== undefined) poePayload.duration         = parameters.duration;
+  if (parameters.size             !== undefined) poePayload.size             = parameters.size;
 
   let poeResponse;
   try {
@@ -49,57 +67,50 @@ export default async function handler(req) {
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        Accept: 'text/event-stream',
       },
       body: JSON.stringify(poePayload),
     });
   } catch (err) {
-    return jsonError(`Network error contacting Poe API: ${err.message}`, 502);
+    return jsonError(`Network error contacting Poe: ${err.message}`, 502);
   }
 
-  // Check if Poe returned an error (non-SSE response)
   const contentType = poeResponse.headers.get('content-type') || '';
+
   if (!contentType.includes('text/event-stream')) {
-    let errorText = await poeResponse.text();
-    // Truncate HTML error pages
-    if (errorText.length > 500) {
-      errorText = errorText.slice(0, 500) + '…';
-    }
-    return jsonError(`Poe API error (${poeResponse.status}): ${errorText}`, poeResponse.status >= 400 ? poeResponse.status : 502);
+    let errorText;
+    try { errorText = await poeResponse.text(); } catch { errorText = '(unreadable)'; }
+    if (errorText.length > 800) errorText = errorText.slice(0, 800) + '…';
+    // Strip HTML tags for readability
+    errorText = errorText.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    return jsonError(`Poe API ${poeResponse.status}: ${errorText}`, poeResponse.status >= 400 ? poeResponse.status : 502);
   }
 
-  // Stream the SSE response back to the client
+  // Stream SSE back to client
   const { readable, writable } = new TransformStream();
-  const writer = writable.getWriter();
+  const writer  = writable.getWriter();
   const encoder = new TextEncoder();
 
   (async () => {
     try {
-      const reader = poeResponse.body.getReader();
+      const reader  = poeResponse.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split('\n');
-        buffer = lines.pop(); // keep incomplete line
-
+        buffer = lines.pop();
         for (const line of lines) {
-          // Forward the raw SSE lines
           await writer.write(encoder.encode(line + '\n'));
         }
       }
-
-      // Flush any remaining buffer
-      if (buffer) {
-        await writer.write(encoder.encode(buffer + '\n'));
-      }
+      if (buffer) await writer.write(encoder.encode(buffer + '\n'));
     } catch (err) {
-      const errEvent = `data: ${JSON.stringify({ type: 'error', allow_retry: false, text: err.message })}\n\n`;
-      await writer.write(encoder.encode(errEvent));
+      await writer.write(encoder.encode(
+        `data: ${JSON.stringify({ type: 'error', allow_retry: false, text: err.message })}\n\n`
+      ));
     } finally {
       await writer.close();
     }
@@ -114,40 +125,6 @@ export default async function handler(req) {
       'X-Accel-Buffering': 'no',
     },
   });
-}
-
-function buildPoeParameters(params) {
-  const result = {};
-
-  if (params.thinking_budget !== undefined) {
-    result.thinking_budget = params.thinking_budget;
-  }
-  if (params.web_search !== undefined) {
-    result.allow_attachments = params.web_search;
-  }
-  if (params.reasoning_effort !== undefined) {
-    result.reasoning_effort = params.reasoning_effort;
-  }
-  if (params.voice !== undefined) {
-    result.voice = params.voice;
-  }
-  if (params.music_length_ms !== undefined) {
-    result.music_length_ms = params.music_length_ms;
-  }
-  if (params.aspect_ratio !== undefined) {
-    result.aspect_ratio = params.aspect_ratio;
-  }
-  if (params.image_only !== undefined) {
-    result.image_only = params.image_only;
-  }
-  if (params.duration !== undefined) {
-    result.duration = params.duration;
-  }
-  if (params.size !== undefined) {
-    result.size = params.size;
-  }
-
-  return result;
 }
 
 function corsHeaders() {
