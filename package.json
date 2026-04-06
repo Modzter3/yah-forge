@@ -1,0 +1,9 @@
+{
+  "name": "yah-forge",
+  "version": "1.0.0",
+  "description": "YAH's Word Forge – Sermon Generator deployed on Vercel with Poe API",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  }
+}
