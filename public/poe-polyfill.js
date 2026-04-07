@@ -1,33 +1,32 @@
 /**
- * window.Poe polyfill for Vercel deployment.
+ * window.Poe polyfill — uses Poe's OpenAI-compatible API via /api/poe proxy.
  *
- * Poe SSE format uses the `event:` field for the event type:
- *   event: text
- *   data: {"text": "hello"}
+ * Poe's OpenAI SSE format:
+ *   data: {"choices":[{"delta":{"content":"hello"},"finish_reason":null}]}
+ *   data: [DONE]
  *
- * The polyfill buffers lines, assembles full SSE events (event + data),
- * then delivers results in the shape the app expects:
+ * Delivers results in the shape the app expects:
  *   handler({ responses: [{ status, content, attachments, statusText }] })
  */
 (function () {
   if (window.Poe) return;
 
   const API_ROUTE = '/api/poe';
-  const handlers = {};
+  const handlers  = {};
 
-  // ── result shape helper ───────────────────────────────────────
+  // ── result shape ─────────────────────────────────────────────
   function wrap(status, content, attachments, statusText) {
     return {
       responses: [{
         status,
-        content: content || '',
+        content:     content     || '',
         attachments: attachments || [],
-        statusText: statusText || '',
+        statusText:  statusText  || '',
       }],
     };
   }
 
-  // ── query string helpers ──────────────────────────────────────
+  // ── query helpers ─────────────────────────────────────────────
   function parseRepeat(query) {
     const m = query.match(/^\/repeat\s+(\d+)\s+/i);
     if (m) return { count: parseInt(m[1], 10), query: query.slice(m[0].length) };
@@ -40,58 +39,35 @@
     return { bot: null, prompt: query };
   }
 
-  // ── SSE parser ────────────────────────────────────────────────
-  // Yields complete { event, data } objects from a ReadableStream.
-  async function* parseSse(stream) {
+  // ── SSE reader — yields raw data payloads ────────────────────
+  async function* readSse(stream) {
     const reader  = stream.getReader();
     const decoder = new TextDecoder();
-    let buffer    = '';
-    let eventType = 'message';
-    let dataLines = [];
-
-    function flush() {
-      if (!dataLines.length) return null;
-      const ev   = { event: eventType, data: dataLines.join('\n') };
-      eventType  = 'message';
-      dataLines  = [];
-      return ev;
-    }
+    let buf = '';
 
     while (true) {
       const { done, value } = await reader.read();
-      if (done) {
-        const ev = flush();
-        if (ev) yield ev;
-        break;
-      }
-
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop(); // keep incomplete line
-
-      for (const raw of lines) {
-        const line = raw.trimEnd();
-        if (line === '') {
-          const ev = flush();
-          if (ev) yield ev;
-        } else if (line.startsWith('event:')) {
-          eventType = line.slice(6).trim();
-        } else if (line.startsWith('data:')) {
-          dataLines.push(line.slice(5).trimStart());
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('data:')) {
+          yield trimmed.slice(5).trim();
         }
-        // ignore id: and retry: lines
       }
     }
+    if (buf.trim().startsWith('data:')) yield buf.trim().slice(5).trim();
   }
 
-  // ── open a stream to the proxy ────────────────────────────────
+  // ── open proxy stream ─────────────────────────────────────────
   async function openStream(bot, prompt, parameters) {
     const res = await fetch(API_ROUTE, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ bot, query: prompt, parameters }),
     });
-
     if (!res.ok) {
       let msg;
       try { msg = (await res.json()).error; } catch { msg = await res.text(); }
@@ -100,57 +76,49 @@
     return res;
   }
 
-  // ── non-streaming: accumulate and return ─────────────────────
+  // ── extract text delta from OpenAI chunk ─────────────────────
+  function deltaText(parsed) {
+    try { return parsed.choices[0].delta.content || ''; } catch { return ''; }
+  }
+  function isFinished(parsed) {
+    try { return parsed.choices[0].finish_reason != null; } catch { return false; }
+  }
+
+  // ── non-streaming: accumulate full response ───────────────────
   async function callPoe(bot, prompt, parameters) {
     const res = await openStream(bot, prompt, parameters);
     let text = '';
-    const attachments = [];
 
-    for await (const { event, data } of parseSse(res.body)) {
+    for await (const raw of readSse(res.body)) {
+      if (raw === '[DONE]') break;
       let parsed;
-      try { parsed = JSON.parse(data); } catch { continue; }
-
-      if (event === 'text') {
-        text += parsed.text || '';
-      } else if (event === 'replace_response') {
-        text = parsed.text || '';
-      } else if (event === 'file_attachment') {
-        attachments.push({ url: parsed.url, content_type: parsed.content_type || '', name: parsed.name || '' });
-      } else if (event === 'error') {
-        throw new Error(parsed.text || 'Poe error');
-      }
-      // 'done' — just stop
+      try { parsed = JSON.parse(raw); } catch { continue; }
+      if (parsed.error) throw new Error(parsed.error.message || parsed.error);
+      text += deltaText(parsed);
     }
 
-    return { status: 'complete', content: text, attachments };
+    return { status: 'complete', content: text, attachments: [] };
   }
 
-  // ── streaming: fire handler incrementally ────────────────────
+  // ── streaming: fire handler on each delta ────────────────────
   async function callPoeStreaming(bot, prompt, parameters, handlerFn) {
     const res = await openStream(bot, prompt, parameters);
     let text = '';
-    const attachments = [];
 
-    for await (const { event, data } of parseSse(res.body)) {
+    for await (const raw of readSse(res.body)) {
+      if (raw === '[DONE]') break;
       let parsed;
-      try { parsed = JSON.parse(data); } catch { continue; }
-
-      if (event === 'text') {
-        text += parsed.text || '';
-        handlerFn(wrap('incomplete', text, attachments));
-      } else if (event === 'replace_response') {
-        text = parsed.text || '';
-        handlerFn(wrap('incomplete', text, attachments));
-      } else if (event === 'file_attachment') {
-        attachments.push({ url: parsed.url, content_type: parsed.content_type || '', name: parsed.name || '' });
-      } else if (event === 'error') {
-        throw new Error(parsed.text || 'Poe streaming error');
-      } else if (event === 'done') {
-        break;
+      try { parsed = JSON.parse(raw); } catch { continue; }
+      if (parsed.error) throw new Error(parsed.error.message || parsed.error);
+      const delta = deltaText(parsed);
+      if (delta) {
+        text += delta;
+        handlerFn(wrap('incomplete', text, []));
       }
+      if (isFinished(parsed)) break;
     }
 
-    handlerFn(wrap('complete', text, attachments));
+    handlerFn(wrap('complete', text, []));
   }
 
   // ── Public API ────────────────────────────────────────────────

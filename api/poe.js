@@ -1,8 +1,5 @@
 export const config = { runtime: 'edge' };
 
-const POE_API_BASE = 'https://api.poe.com/bot';
-const PROTOCOL_VERSION = '1';
-
 export default async function handler(req) {
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders() });
@@ -20,50 +17,37 @@ export default async function handler(req) {
   try { body = await req.json(); }
   catch { return jsonError('Invalid JSON body', 400); }
 
-  const { bot, query, parameters = {}, conversation_id } = body;
+  const { bot, query, parameters = {} } = body;
   if (!bot || !query) return jsonError('Missing required fields: bot, query', 400);
 
-  const convId = conversation_id || crypto.randomUUID();
-  const msgId  = crypto.randomUUID();
-
-  // Match exactly what fastapi-poe Python client sends
-  const poePayload = {
-    version: PROTOCOL_VERSION,
-    type: 'query',
-    query: [
-      {
-        role: 'user',
-        content: query,
-        content_type: 'text/markdown',
-        timestamp: 0,
-        message_id: '',
-        feedback: [],
-        attachments: [],
-      },
-    ],
-    user_id: '',
-    conversation_id: convId,
-    message_id: msgId,
+  // Build OpenAI-compatible request — always stream so we can pipe SSE back
+  const payload = {
+    model: bot,
+    messages: [{ role: 'user', content: query }],
+    stream: true,
   };
 
-  // Media-specific parameters that some Poe bots accept
-  if (parameters.music_length_ms !== undefined) poePayload.music_length_ms = parameters.music_length_ms;
-  if (parameters.voice           !== undefined) poePayload.voice           = parameters.voice;
-  if (parameters.aspect_ratio    !== undefined) poePayload.aspect_ratio    = parameters.aspect_ratio;
-  if (parameters.image_only      !== undefined) poePayload.image_only      = parameters.image_only;
-  if (parameters.duration        !== undefined) poePayload.duration        = parameters.duration;
-  if (parameters.size            !== undefined) poePayload.size            = parameters.size;
+  // Pass any supported model parameters through
+  if (parameters.thinking_budget  !== undefined) payload.thinking_budget  = parameters.thinking_budget;
+  if (parameters.reasoning_effort !== undefined) payload.reasoning_effort = parameters.reasoning_effort;
+  if (parameters.aspect_ratio     !== undefined) payload.aspect_ratio     = parameters.aspect_ratio;
+  if (parameters.image_only       !== undefined) payload.image_only       = parameters.image_only;
+  if (parameters.duration         !== undefined) payload.duration         = parameters.duration;
+  if (parameters.size             !== undefined) payload.size             = parameters.size;
+  if (parameters.voice            !== undefined) payload.voice            = parameters.voice;
+  if (parameters.music_length_ms  !== undefined) payload.music_length_ms  = parameters.music_length_ms;
 
   let poeRes;
   try {
-    poeRes = await fetch(`${POE_API_BASE}/${encodeURIComponent(bot)}`, {
+    poeRes = await fetch('https://api.poe.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        Accept: 'text/event-stream',
+        'HTTP-Referer': 'https://yah-forge.vercel.app',
+        'X-Title': "YAH's Word Forge",
       },
-      body: JSON.stringify(poePayload),
+      body: JSON.stringify(payload),
     });
   } catch (err) {
     return jsonError(`Network error reaching Poe: ${err.message}`, 502);
@@ -74,15 +58,16 @@ export default async function handler(req) {
   if (!ct.includes('text/event-stream')) {
     let raw = '';
     try { raw = await poeRes.text(); } catch { raw = '(unreadable)'; }
-    // Strip HTML tags so the error is readable
-    const clean = raw.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 600);
-    return jsonError(
-      `Poe ${poeRes.status} for bot "${bot}": ${clean || '(empty body)'}`,
-      poeRes.status >= 400 ? poeRes.status : 502,
-    );
+    let clean = raw.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 600);
+    // Try to parse as JSON for a cleaner error message
+    try {
+      const j = JSON.parse(raw);
+      clean = j.error?.message || j.message || clean;
+    } catch { /* keep clean as-is */ }
+    return jsonError(`Poe ${poeRes.status} (bot: ${bot}): ${clean || '(empty)'}`, poeRes.status >= 400 ? poeRes.status : 502);
   }
 
-  // Pipe the SSE stream straight back to the browser
+  // Pipe the OpenAI-format SSE stream straight back to the browser
   const { readable, writable } = new TransformStream();
   const writer  = writable.getWriter();
   const encoder = new TextEncoder();
@@ -102,9 +87,7 @@ export default async function handler(req) {
       }
       if (buf) await writer.write(encoder.encode(buf + '\n'));
     } catch (e) {
-      await writer.write(encoder.encode(
-        `event: error\ndata: ${JSON.stringify({ text: e.message })}\n\n`,
-      ));
+      await writer.write(encoder.encode(`data: {"error":"${e.message}"}\n\n`));
     } finally {
       await writer.close();
     }
