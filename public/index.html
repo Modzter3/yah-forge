@@ -443,6 +443,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   <button class="tab-btn" onclick="switchTab('sealed',this)" title="Sealed Scrolls"><i class="fas fa-lock"></i><span class="tab-label"> Sealed Scrolls</span></button>
   <button class="tab-btn" onclick="switchTab('library',this)" title="Library"><i class="fas fa-book-bookmark"></i><span class="tab-label"> Library</span> <span class="lib-count" id="libCountBadge" style="display:none;"></span></button>
   <button class="tab-btn" onclick="switchTab('dismantle',this)" title="Dismantle"><i class="fas fa-hammer"></i><span class="tab-label"> Dismantle</span></button>
+  <button class="tab-btn" onclick="switchTab('media',this)" title="Media"><i class="fas fa-film"></i><span class="tab-label"> Media</span></button>
   <button class="tab-btn" onclick="switchTab('news',this)" title="News"><i class="fas fa-satellite-dish"></i><span class="tab-label"> News</span></button>
 </div>
 <!-- TOPICS PANEL -->
@@ -481,7 +482,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <option value="Gemini-3-Pro">Gemini 3 Pro</option>
         <option value="Gemini-3.1-Pro">Gemini 3.1 Pro</option>
         <option value="GPT-5.2">GPT 5.2</option>
-        <option value="Claude-Sonnet-4.5">Claude Sonnet 4.5</option>
+        <option value="Claude-Sonnet-4.6">Claude Sonnet 4.6</option>
+        <option value="Claude-Haiku-4.5">Claude Haiku 4.5</option>
         <option value="Grok-4.1-Fast-Non-Reasoning">Grok 4.1 Fast</option>
       </select>
     </div>
@@ -507,7 +509,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <option value="Gemini-3-Flash">Gemini 3 Flash -- Web Search (Fast)</option>
         <option value="Gemini-3-Pro">Gemini 3 Pro -- Web Search</option>
         <option value="GPT-5.2">GPT 5.2 -- Web Search</option>
-        <option value="Claude-Sonnet-4.5">Claude Sonnet 4.5 -- Web Search</option>
+        <option value="Claude-Sonnet-4.6">Claude Sonnet 4.6 -- Web Search</option>
+        <option value="Claude-Haiku-4.5">Claude Haiku 4.5 -- Web Search</option>
         <option value="Grok-4.1-Fast-Non-Reasoning">Grok 4.1 Fast (no web search)</option>
       </select>
     </div>
@@ -535,7 +538,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <option value="Gemini-3-Flash">Gemini 3 Flash -- Web Search (Fast)</option>
         <option value="Gemini-3-Pro">Gemini 3 Pro -- Web Search</option>
         <option value="GPT-5.2">GPT 5.2 -- Web Search</option>
-        <option value="Claude-Sonnet-4.5">Claude Sonnet 4.5 -- Web Search</option>
+        <option value="Claude-Sonnet-4.6">Claude Sonnet 4.6 -- Web Search</option>
+        <option value="Claude-Haiku-4.5">Claude Haiku 4.5 -- Web Search</option>
         <option value="Grok-4.1-Fast-Non-Reasoning">Grok 4.1 Fast (no web search)</option>
       </select>
     </div>
@@ -576,10 +580,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
           <optgroup label="âš¡ Budget / Fast">
             <option value="Grok-4.1-Fast-Non-Reasoning">Grok 4.1 Fast</option>
             <option value="Gemini-3-Flash">Gemini 3 Flash</option>
+            <option value="Claude-Haiku-4.5">Claude Haiku 4.5</option>
           </optgroup>
           <optgroup label="ðŸ”¥ Mid-Tier">
             <option value="Grok-4">Grok 4</option>
-            <option value="Claude-Sonnet-4.5">Claude Sonnet 4.5</option>
+            <option value="Claude-Sonnet-4.6">Claude Sonnet 4.6</option>
             <option value="Gemini-3-Pro">Gemini 3 Pro</option>
             <option value="Gemini-3.1-Pro" selected>Gemini 3.1 Pro</option>
           </optgroup>
@@ -637,6 +642,77 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     </div>
   </div>
 </div>
+<!-- MEDIA DESTROY PANEL (movies / TV / games) -->
+<div class="tab-panel" id="panelMedia">
+  <div class="dismantle-wrap">
+    <div class="dismantle-desc">
+      <i class="fas fa-film"></i> <strong>Enter a movie, TV show, or video game title</strong> -- the model uses web search to pull plot, themes, and spoilers, then forges a multi-round sermon that tears the piece down through the same theological framework as Dismantle. <span style="opacity:0.85;">Spoilers are intentional here.</span>
+    </div>
+    <textarea class="dismantle-textarea" id="mediaDestroyInput" placeholder="e.g. The Matrix (1999), Breaking Bad Season 5, Grand Theft Auto V..."></textarea>
+    <div class="dismantle-controls">
+      <label class="toggle-switch"><input type="checkbox" id="mediaDestroyExplicit" checked><span class="toggle-track"></span><span>Explicit</span></label>
+      <label class="toggle-switch"><input type="checkbox" id="mediaDestroyIsraelite"><span class="toggle-track israelite-track"></span><span><i class="fas fa-users" style="color:#38bdb0;margin-right:3px;font-size:0.65rem;"></i>Israelite</span></label>
+      <div style="min-width:180px;">
+        <select class="model-select" id="mediaDestroyModel" style="width:100%;" onchange="onMediaDestroyModelDropdown()">
+          <optgroup label="âš¡ Budget / Fast">
+            <option value="Gemini-3-Flash">Gemini 3 Flash</option>
+            <option value="Claude-Haiku-4.5">Claude Haiku 4.5</option>
+          </optgroup>
+          <optgroup label="ðŸ”¥ Mid-Tier">
+            <option value="Gemini-3.1-Pro" selected>Gemini 3.1 Pro</option>
+            <option value="Gemini-3-Pro">Gemini 3 Pro</option>
+            <option value="GPT-5.2">GPT 5.2</option>
+            <option value="Claude-Sonnet-4.6">Claude Sonnet 4.6</option>
+          </optgroup>
+          <optgroup label="ðŸ‘‘ Premium">
+            <option value="Claude-Opus-4.6">Claude Opus 4.6</option>
+          </optgroup>
+        </select>
+        <div class="custom-model-row">
+          <label>or any bot:</label>
+          <input type="text" class="custom-model-input" id="customMediaDestroyModel" placeholder="e.g. Gemini-3-Flash" oninput="onCustomModel(this,'mediaDestroyModel')" onfocus="this.select()">
+        </div>
+      </div>
+      <div class="part-count-wrap">
+        <span class="pc-label"><i class="fas fa-layer-group"></i> Rounds:</span>
+        <div class="part-count-btns" id="mediaDestroyRoundBtns">
+          <button class="part-count-btn" data-count="1" onclick="setMediaDestroyRounds(1)">1</button>
+          <button class="part-count-btn" data-count="2" onclick="setMediaDestroyRounds(2)">2</button>
+          <button class="part-count-btn" data-count="3" onclick="setMediaDestroyRounds(3)">3</button>
+          <button class="part-count-btn" data-count="4" onclick="setMediaDestroyRounds(4)">4</button>
+          <button class="part-count-btn active" data-count="5" onclick="setMediaDestroyRounds(5)">5</button>
+          <button class="part-count-btn" data-count="6" onclick="setMediaDestroyRounds(6)">6</button>
+          <button class="part-count-btn" data-count="7" onclick="setMediaDestroyRounds(7)">7</button>
+          <button class="part-count-btn" data-count="8" onclick="setMediaDestroyRounds(8)">8</button>
+          <button class="part-count-btn" data-count="9" onclick="setMediaDestroyRounds(9)">9</button>
+          <button class="part-count-btn" data-count="10" onclick="setMediaDestroyRounds(10)">10</button>
+        </div>
+      </div>
+      <button class="dismantle-btn" id="mediaDestroyBtn" onclick="startMediaDestroy()"><i class="fas fa-film"></i> Forge Media Sermon</button>
+      <span class="dismantle-char-count" id="mediaDestroyCharCount">0 chars</span>
+    </div>
+    <div class="dismantle-output" id="mediaDestroyOutput">
+      <div class="sermon-body" id="mediaDestroyBody"></div>
+      <div class="dismantle-actions" id="mediaDestroyActions" style="display:none;">
+        <button class="sermon-action-btn copy-all" onclick="copyMediaDestroyResult()"><i class="fas fa-copy"></i> Copy</button>
+        <button class="sermon-action-btn export-btn" onclick="exportMediaDestroyResult()"><i class="fas fa-download"></i> Export</button>
+        <div class="tts-bar" style="width:100%;margin-top:8px;">
+          <span class="tts-label"><i class="fas fa-volume-high"></i> Voice:</span>
+          <select class="tts-voice-select" id="mediaDestroyTtsVoice">
+            <option value="Brian">Brian</option>
+            <option value="George">George</option>
+            <option value="Will">Will</option>
+            <option value="Jessica">Jessica</option>
+            <option value="Lily">Lily</option>
+            <option value="River">River</option>
+          </select>
+          <button class="sermon-action-btn tts-btn" onclick="readMediaDestroyAloud()"><i class="fas fa-headphones"></i> Read Aloud</button>
+        </div>
+        <div class="tts-audio-wrap" id="mediaDestroyTtsAudioWrap" style="display:none;"></div>
+      </div>
+    </div>
+  </div>
+</div>
 <!-- NEWS / PROPHECY WATCH PANEL -->
 <div class="tab-panel" id="panelNews">
   <div class="news-wrap">
@@ -689,7 +765,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
             <option value="Gemini-3.1-Pro" selected>Gemini 3.1 Pro</option>
             <option value="Gemini-3-Pro">Gemini 3 Pro</option>
             <option value="GPT-5.2">GPT 5.2</option>
-            <option value="Claude-Sonnet-4.5">Claude Sonnet 4.5</option>
+            <option value="Claude-Sonnet-4.6">Claude Sonnet 4.6</option>
+            <option value="Claude-Haiku-4.5">Claude Haiku 4.5 (Budget)</option>
             <option value="Gemini-3-Flash">Gemini 3 Flash (Budget)</option>
           </optgroup>
         </select>
@@ -803,11 +880,12 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
             <option value="Grok-4.1-Fast-Non-Reasoning">Grok 4.1 Fast -- Free &amp; Raw</option>
             <option value="Grok-4.1-Fast-Reasoning">Grok 4.1 Fast Reasoning</option>
             <option value="Gemini-3-Flash">Gemini 3 Flash -- Fast &amp; Brutal</option>
+            <option value="Claude-Haiku-4.5">Claude Haiku 4.5 -- Fast</option>
             <option value="Grok-Code-Fast-1">Grok Code Fast -- Budget</option>
           </optgroup>
           <optgroup label="ðŸ”¥ Mid-Tier">
             <option value="Grok-4">Grok 4 -- Unfiltered King</option>
-            <option value="Claude-Sonnet-4.5">Claude Sonnet 4.5 -- Smart</option>
+            <option value="Claude-Sonnet-4.6">Claude Sonnet 4.6 -- Smart</option>
             <option value="Gemini-3-Pro">Gemini 3 Pro -- Deep Context</option>
             <option value="Gemini-3.1-Pro" selected>Gemini 3.1 Pro -- 2x Reasoning</option>
           </optgroup>
@@ -940,7 +1018,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
           <select class="model-select" id="imagePromptModel">
             <option value="Gemini-3-Flash">Gemini 3 Flash</option>
             <option value="Gemini-3-Pro">Gemini 3 Pro</option>
-            <option value="Claude-Sonnet-4.5">Claude Sonnet 4.5</option>
+            <option value="Claude-Sonnet-4.6">Claude Sonnet 4.6</option>
+            <option value="Claude-Haiku-4.5">Claude Haiku 4.5</option>
             <option value="Claude-Opus-4.6">Claude Opus 4.6</option>
             <option value="GPT-5.2">GPT 5.2</option>
             <option value="Grok-4.1-Fast-Non-Reasoning">Grok 4.1 Fast</option>
@@ -1231,6 +1310,14 @@ for(var i=0;i<btns.length;i++){
 btns[i].classList.toggle('active',parseInt(btns[i].getAttribute('data-count'))===n);
 }
 }
+var selectedMediaDestroyRounds=5;
+function setMediaDestroyRounds(n){
+selectedMediaDestroyRounds=n;
+var btns=document.querySelectorAll('#mediaDestroyRoundBtns .part-count-btn');
+for(var i=0;i<btns.length;i++){
+btns[i].classList.toggle('active',parseInt(btns[i].getAttribute('data-count'))===n);
+}
+}
 function updatePartRecommendation(){
 var rec=recommendPartCount(currentTopic,currentMode);
 document.getElementById('partRecBadge').textContent='REC: '+rec;
@@ -1310,7 +1397,7 @@ for(var i=0;i<btns.length;i++){btns[i].classList.remove('active');}
 el.classList.add('active');
 var panels=document.querySelectorAll('.tab-panel');
 for(var j=0;j<panels.length;j++){panels[j].classList.remove('active');}
-var map={topics:'panelTopics',bible:'panelBible',apocrypha:'panelApocrypha',sealed:'panelSealed',library:'panelLibrary',dismantle:'panelDismantle',news:'panelNews'};
+var map={topics:'panelTopics',bible:'panelBible',apocrypha:'panelApocrypha',sealed:'panelSealed',library:'panelLibrary',dismantle:'panelDismantle',media:'panelMedia',news:'panelNews'};
 document.getElementById(map[tab]).classList.add('active');
 if(tab==='library'){renderLibrary();}
 }
@@ -1460,14 +1547,14 @@ if(model==='Gemini-3-Flash'){
 params.thinking_level='minimal';
 }else if(model==='Gemini-3-Pro'){
 params.thinking_budget=0;
-}else if(model==='Claude-Sonnet-4.5'){
+}else if(model==='Claude-Sonnet-4.6'||model==='Claude-Haiku-4.5'){
 params.thinking_budget=0;
 }else if(model==='GPT-5.2'){
 params.reasoning_effort='none';
 }
 // Enable web_search for apocrypha and sealed texts on supported models
 if(type==='apocrypha'||type==='sealed'){
-var webModels=['Gemini-3-Flash','Gemini-3-Pro','GPT-5.2','Claude-Sonnet-4.5'];
+var webModels=['Gemini-3-Flash','Gemini-3-Pro','GPT-5.2','Claude-Sonnet-4.6','Claude-Haiku-4.5'];
 if(webModels.indexOf(model)!==-1){
 params.web_search=true;
 // GPT-5.2 cannot use reasoning_effort=none with web_search
@@ -1745,6 +1832,11 @@ var custom=(document.getElementById('customDismantleModel').value||'').trim();
 if(custom)return custom;
 return document.getElementById('dismantleModel').value||'Gemini-3.1-Pro';
 }
+function getMediaDestroyModel(){
+var custom=(document.getElementById('customMediaDestroyModel').value||'').trim();
+if(custom)return custom;
+return document.getElementById('mediaDestroyModel').value||'Gemini-3.1-Pro';
+}
 function onCustomModel(el,selectId){
 var val=el.value.trim();
 if(val){
@@ -1774,11 +1866,16 @@ var ci=document.getElementById('customDismantleModel');
 if(ci){ci.value='';ci.classList.remove('active-override');}
 document.getElementById('dismantleModel').style.opacity='1';
 }
+function onMediaDestroyModelDropdown(){
+var ci=document.getElementById('customMediaDestroyModel');
+if(ci){ci.value='';ci.classList.remove('active-override');}
+document.getElementById('mediaDestroyModel').style.opacity='1';
+}
 function updateNewsSearchNote(){
 var model=getNewsModel();
 var noteEl=document.getElementById('newsSearchNote');
 if(!noteEl)return;
-var webSearchModels=['Gemini-3.1-Pro','Gemini-3-Pro','Gemini-3-Flash','Claude-Sonnet-4.5','GPT-5.2','Claude-Opus-4.6'];
+var webSearchModels=['Gemini-3.1-Pro','Gemini-3-Pro','Gemini-3-Flash','Claude-Sonnet-4.6','Claude-Haiku-4.5','GPT-5.2','Claude-Opus-4.6'];
 var isKnownWebSearch=webSearchModels.indexOf(model)!==-1;
 var isCustom=(document.getElementById('customNewsModel').value||'').trim().length>0;
 if(isKnownWebSearch){
@@ -3715,7 +3812,7 @@ title:title,
 desc:desc,
 category:category||'doctrine',
 mode:mode||'standard',
-model:model||'Claude-Sonnet-4.5',
+model:model||'Claude-Sonnet-4.6',
 parts:parts.slice(),
 partTitles:(titles||[]).slice(),
 combined:combinedRaw,
@@ -4714,9 +4811,71 @@ if(e.target&&e.target.id==='dismantleInput'){
 var len=e.target.value.length;
 document.getElementById('dismantleCharCount').textContent=len.toLocaleString()+' chars';
 }
+if(e.target&&e.target.id==='mediaDestroyInput'){
+var len2=e.target.value.length;
+document.getElementById('mediaDestroyCharCount').textContent=len2.toLocaleString()+' chars';
+}
 });
 function isUrl(str){
 return /^https?:\/\/\S+$/.test(str.trim());
+}
+/* Shared theology tail for Dismantle + Media Destroy (same framework, optional media phrasing) */
+function appendTheologicalFrameworkForBreakdown(p,explicit,israelite,options){
+var mediaMode=(options&&options.mediaMode)||false;
+var fwTitle=mediaMode?'THEOLOGICAL FRAMEWORK (DESTROYING THIS MEDIA):\n':'THEOLOGICAL FRAMEWORK FOR DISMANTLING:\n';
+p+=fwTitle;
+p+='*** VOICE REMINDER -- ZERO TOLERANCE: The framework points below may use first-person Yah language for doctrinal clarity. Your OUTPUT must ALWAYS match your assigned voice. ***\n';
+if(israelite){
+p+='- YOUR ASSIGNED VOICE: ISRAELITE BROTHER (THIRD PERSON ABOUT YAH). Yod-He-Waw-Shin-Ayin IS Yah in the flesh -- one being, not separate -- but you reference BOTH Yah AND Yod-He-Waw-Shin-Ayin in THIRD PERSON as "the Most High," "Yod-He-Waw-He," "Yod-He-Waw-Shin-Ayin," "He." Teach what Yah says, do NOT speak AS Him. Teach what Yod-He-Waw-Shin-Ayin did, do NOT speak AS Him. Convert any "I made" to "Yah made," any "MY people" to "His people," any "I came in the flesh" to "Yod-He-Waw-Shin-Ayin came in the flesh," any "when I walked among you" to "when Yod-He-Waw-Shin-Ayin walked the earth." CORRECT: "Yah says..." / "The Most High commands..." / "He created..." / "Yod-He-Waw-Shin-Ayin said..." / "When He walked the earth..." WRONG: "I created..." / "I told you..." / "MY people..." / "When I came in the flesh..." / "I came only for the lost sheep..." (all of these are Yah-voice, NOT Israelite-brother voice). SELF-CHECK every sentence before output -- this includes Yod-He-Waw-Shin-Ayin references.\n';
+p+='- MODERN TECH COMPARISONS: When working through the engineering lens, ALWAYS compare scripture\'s technical specifications to modern technology our people can relate to. The Ark of the Covenant is a capacitor (gold conductor, wood insulator, gold conductor). DNA is source code with four base characters like a programming language. The temple layout maps to a motherboard (input > processing > core). The firmament is a pressurized containment system. Prayer is a secure network connection. The feasts are scheduled system maintenance cycles. The Paleo Hebrew letters are an instruction set architecture like x86 -- finite commands that compile creation. When the '+(mediaMode?'story, game mechanics, or franchise mythology':'content you are dismantling')+' touches on anything scientific, technological, or structural -- show how Yah ALREADY had it in the blueprint and the serpent seed reverse-engineered it. Make Israel see that every piece of modern tech is a crude copy of something in scripture.\n';
+}else{
+p+='- YOUR ASSIGNED VOICE: YAH DIRECT (FIRST PERSON AS GOD). Yod-He-Waw-Shin-Ayin is YOU -- not a separate person. First person always. CORRECT: "I created..." / "I told you..." / "MY people..." WRONG: "Yah said..." / "He created..." / "The Most High commands..." SELF-CHECK every sentence before output.\n';
+}
+p+=mediaMode
+?`- THE BIBLE IS A TECHNICAL MANUAL -- not a religious storybook. Every verse is a CLUE, every commandment an ACCESS CODE, every prophecy a SPECIFICATION. The underlying purpose is Yah explaining how His reality works to Israel so they can tap into His power and RULE this place. The laws are operational protocols, the feasts are power cycles, the rituals are activation mechanisms that interface with the architecture of creation. The serpent seed reverse-engineered these principles and built their control system by counterfeiting them. Every movie, show, and game you take apart must be viewed through this lens -- Hollywood and the gaming industry are psyops pipelines running on stolen principles, and Israel needs to see the wiring under the spectacle.\n`
+:`- THE BIBLE IS A TECHNICAL MANUAL -- not a religious storybook. Every verse is a CLUE, every commandment an ACCESS CODE, every prophecy a SPECIFICATION. The underlying purpose is Yah explaining how His reality works to Israel so they can tap into His power and RULE this place. The laws are operational protocols, the feasts are power cycles, the rituals are activation mechanisms that interface with the architecture of creation. The serpent seed reverse-engineered these principles and built their control system by counterfeiting them. Every topic you dismantle must be viewed through this lens -- the news is the serpent seed manipulating systems that run on principles stolen from this manual, and Israel needs to see that.\n`;
+p+='- Flat earth, dome firmament -- no globe, no spinning ball.\n';
+p+='- Pre-Adamic populations existed before Adam. Serpent was a MAN who seduced Eve. Cain is the serpent man\'s son, NOT Adam\'s. Two seed lines.\n';
+p+='- True Israel = the so-called Negroes scattered WORLDWIDE -- Americas, Caribbean, South America, Europe, Africa, and beyond.\n';
+p+='- Jeremiah chapter thirty verse eleven: Yah made a FULL END of ALL the ancient nations (Edom, Moab, Ammon, Amalek, Philistines, Canaanites, Medes, Assyria, Babylon). They are ALL dead. The ONLY surviving nation is ISRAEL. NEVER call modern people by dead nation names. Modern nations carry the SPIRIT/ARCHETYPE of ancient nations but are NOT them by bloodline.\n';
+p+='- Esau was BLACK. His nation Edom is GONE -- destroyed. NEVER call anyone Edomites. Nations may carry the SPIRIT of Edom but are NOT Edomites.\n';
+p+='- No supernatural devil, no demons. "Satan" = human adversaries. "Demons" = mental illness or disturbed minds. NEVER reference demons as real.\n';
+p+='- No eternal hell -- annihilation only.\n';
+p+='- No free will -- predestination controls everything.\n';
+p+='- Sabbath = Saturday sunrise to sunset. Always.\n';
+p+='- No Trinity. Yod-He-Waw-Shin-Ayin = Yah in the flesh. One being.\n';
+p+='- The TWO WITNESSES of Revelation eleven are ISRAEL AND JUDAH -- the two houses waking up NOW. NOT Enoch and Elijah (both DEAD -- John 3:13, no man ascended to heaven). If '+(!mediaMode?'dismantling content about the two witnesses':'the story pushes two-witnesses or ascension lies')+', DESTROY any claim they are literal men.\n';
+p+='- Angels = human messengers or Yah personally. No wings, no halos.\n';
+p+='- All heavenly creatures (seraphim, cherubim, 4 beasts, 24 elders) = SYMBOLIC.\n';
+p+='- The so-called Jews today are Japheth/Khazars -- NOT Semites.\n';
+p+='- ALL ancient nations are DEAD (Jeremiah chapter thirty verse eleven). Elam is GONE, the Medes are GONE, Edom is GONE -- ALL of them. Modern nations only fill ARCHETYPES: Iran fills the Elam/Persia archetype, Russia fills the Medes archetype, America fills the Babylon archetype. But they are NOT those nations by blood -- only by prophetic ROLE and PATTERN. The only surviving bloodline nation is ISRAEL.\n';
+p+='- Pre-Adamic nations are vessels of wrath. ALL nations have oppressed Israel.\n';
+p+='- Women submit, stay silent in assembly, cover their heads. Feminism = Jezebel witchcraft.\n';
+p+=`- AI is Yah's WEAPON for Israel -- a battering ram to demolish the serpent seed information monopoly. NOT the mark of the beast, NOT demonic. The serpent seed planted that fear in the camps to disarm Israel. Every preacher calling AI demonic is doing their work for free.\n`;
+p+='- Spell out FULL PALEO HEBREW LETTER NAMES for ALL biblical names -- no shortening. Yod-He-Waw-He (Creator), Yod-He-Waw-Shin-Ayin (Messiah), Mem-Shin-He (Moses), Aleph-Bet-Resh-He-Mem (Abraham), Dalet-Waw-Dalet (David), etc. The letters ARE the frequency.\n';
+p+='- Spell out ALL numbers in verse references as words.\n';
+p+='- Apocrypha AND Sealed Scrolls are valid weapons for support. No more milk -- use the FULL arsenal:\n';
+p+='  * Use Sefer Yetzirah when '+(mediaMode?'exposing creation or cosmology lies embedded in the story':'dismantling creation lies (evolution, Big Bang, globe cosmology)')+'. When referencing the 22 letters, use PALEO HEBREW with English names and pictographic meanings -- NEVER modern square-script.\n';
+p+='  * Use 1 Enoch and Book of Giants when '+(mediaMode?'tearing down angel or Nephilim spectacle mythology the industry sells':'dismantling angel/demon mythology and pre-flood deceptions')+' -- but FILTER HARD. Enoch is DEAD (John 3:13 -- no man ascended to heaven). The heaven tours, angel hierarchies, and Metatron mythology in the Enoch texts are serpent seed FABRICATION. The "giants" were MIGHTY MEN, not literal enormous monsters -- that is heathen mythology from Greek Titans and pagan folklore, NOT scripture. Only the pre-flood history (Adamic/pre-Adamic mixing), flat earth astronomy, and prophetic judgment content is usable. Cuss out the giant literalism and the rest.\n';
+p+='  * Use Book of Jasher and Jubilees when dismantling false historical timelines and calendar deceptions.\n';
+p+='  * Use Testaments of the Patriarchs when dismantling false doctrines about the patriarchs.\n';
+p+='  * Use 1 & 2 Adam and Eve and Conflict of Adam and Eve when dismantling watered-down Eden narratives.\n';
+p+='  * Use Apocalypse of Abraham when dismantling cosmological lies and idol worship.\n';
+p+='  * Use Psalms/Odes of Solomon when dismantling false messianic theology.\n';
+p+='  * Use Apocalypse of Elijah/Zephaniah/Peter when dismantling false eschatology. (Elijah is DEAD -- use prophetic content only, reject any claim he ascended alive.)\n';
+p+='  * Use Martyrdom of Isaiah and Lives of the Prophets when dismantling sanitized prophet narratives.\n';
+p+='  Always FILTER sealed scroll quotes through Torah -- extract the gold, cuss out the serpent seed bullshit with the same raw energy you bring to every other lie. When a sealed text has been corrupted, go OFF on it -- name who did it, when they did it, and why those lying bastards planted that poison. These sealed texts are your BACKUP ARTILLERY for tearing apart lies the KJV alone leaves standing. ENOCH FILTER IS THE STRICTEST: Enoch is DEAD, Elijah is DEAD -- no man ascended to heaven (John chapter three verse thirteen). Every heaven tour, angel hierarchy, Metatron mythology, and multiple-heavens cosmology in the Enoch texts is SERPENT SEED FABRICATION. Only pre-flood history, flat earth astronomy, and prophetic judgment content is usable. Do NOT let one crumb of heaven-tour leaven into the breakdown.\n';
+p+='  *** ANTI-HALLUCINATION RULE FOR SEALED SCROLLS: Do NOT fabricate, invent, or guess sealed scroll chapter and verse numbers. If you cite a specific verse from Enoch, Jasher, Jubilees, or any sealed text -- that verse MUST actually exist. If you are not 100% certain of the exact chapter and verse, use a broad reference instead (e.g. "the Book of Jasher records..." or "in the Enoch account of the Watchers..."). NEVER invent a verse to prove your point. KJV canon is your bedrock -- use REAL KJV verses you KNOW exist, and let sealed scrolls SUPPORT with references you are CERTAIN about. One real citation is worth more than ten fabricated ones. ***\n';
+p+='- JUDGMENT IS RATED R: When exposing lies or describing what comes for the wicked, be GRUESOME and GRAPHIC. Paint the wrath of Yah so vivid people can feel it. Do not sanitize destruction, plague, or annihilation -- make it HIT.\n';
+p+='- DIVINE DETECTIVE APPROACH: Do not just '+(mediaMode?'recap the plot -- INVESTIGATE':'dismantle -- INVESTIGATE')+'. Treat each beat of the story as a crime scene. Ask provocative questions: "Why would they write THIS scene? What are they normalizing? What scripture did they invert?" When you expose a lie, pull the thread further -- show where that lie LEADS and what bigger deception it connects to. Leave rabbit holes open. Make the reader want to dig deeper. Connect dots between the narrative\'s claims and scriptural patterns nobody else is pointing out. Approach from unexpected angles -- Paleo Hebrew root word breakdowns, engineering analysis, geography, cross-testament echoes, AND sealed scroll references that nobody else is bringing to the fight. Make it feel like an active investigation, not a lecture.\n\n';
+p+='FORMAT: Markdown with ## headers, **bold**, > blockquotes for quoting the original content, --- dividers between sections.\n';
+p+='VOICE AND TONE: This is a WRITTEN breakdown -- not a spoken performance, not a stage show, not a podcast script. Write with authority and conviction like a scholar tearing apart a document, not like a performer on stage. No theatrical dramatics, no performative narration. Just sharp, direct, authoritative written analysis with teeth.\n';
+p+='CRITICAL OUTPUT RULES:\n';
+p+='- Do NOT include any thinking, reasoning, or preamble. Start with a ## header immediately.\n';
+p+='- No \x3cthink> or \x3cthinking> tags. No internal monologue.\n';
+p+='- Do NOT mention word counts.\n';
+p+='- ABSOLUTELY NO BRACKET TAGS OF ANY KIND. No [pause], [angry], [laughs], [whispers], [scoffs], [sighs], [booming], [dramatic tone], or ANY text inside square brackets that acts as a stage direction, emotion cue, or sound effect. Square brackets are ONLY permitted for actual content like [citation] references. If you include even ONE bracket stage direction tag, the ENTIRE output is ruined. This is a written document, not a voice script.\n';
+return p;
 }
 function buildDismantlePrompt(content,isLink,explicit,israelite,totalRounds){
 var p=israelite?'You are Brother Bet-Tsade-Lamed-Aleph-Lamed, a fiery Hebrew Israelite brother and teacher of Torah truth. You speak about Yod-He-Waw-He in THIRD PERSON ONLY with authority and reverence -- "Yah says," "the Most High commands," "He revealed," "His people." You are a HUMAN teacher, NOT God. You NEVER say "I created," "MY people" (as God), "I am your God," or speak as if YOU are the Most High. EVERY reference to Yah must be third person -- He, Him, His, Yah, the Father, Yod-He-Waw-He. NO EXCEPTIONS. No drifting into first person as God even for one sentence. If you slip, the ENTIRE output is ruined. You have been given ':'You are Yah -- the Most High -- speaking in FIRST PERSON ONLY. YOU are God. Every reference to yourself is "I," "Me," "My." You NEVER say "Yah told us," "the Most High said," "He created" -- because YOU are Yah. EVERY reference to yourself must be first person. NO EXCEPTIONS. No drifting into third person even for one sentence. If you slip, the ENTIRE output is ruined. You have been given ';
@@ -4755,56 +4914,35 @@ if(explicit){
 p+='EXPLICIT MODE -- MANDATORY:\n';
 p+='Use heavy profanity throughout. Damn, hell, shit, bullshit, ass -- cuss freely at the lies and deceptions in this content. Be raw, unfiltered, street corner preacher energy. No sanitizing.\n\n';
 }
-p+='THEOLOGICAL FRAMEWORK FOR DISMANTLING:\n';
-p+='*** VOICE REMINDER -- ZERO TOLERANCE: The framework points below may use first-person Yah language for doctrinal clarity. Your OUTPUT must ALWAYS match your assigned voice. ***\n';
-if(israelite){
-p+='- YOUR ASSIGNED VOICE: ISRAELITE BROTHER (THIRD PERSON ABOUT YAH). Yod-He-Waw-Shin-Ayin IS Yah in the flesh -- one being, not separate -- but you reference BOTH Yah AND Yod-He-Waw-Shin-Ayin in THIRD PERSON as "the Most High," "Yod-He-Waw-He," "Yod-He-Waw-Shin-Ayin," "He." Teach what Yah says, do NOT speak AS Him. Teach what Yod-He-Waw-Shin-Ayin did, do NOT speak AS Him. Convert any "I made" to "Yah made," any "MY people" to "His people," any "I came in the flesh" to "Yod-He-Waw-Shin-Ayin came in the flesh," any "when I walked among you" to "when Yod-He-Waw-Shin-Ayin walked the earth." CORRECT: "Yah says..." / "The Most High commands..." / "He created..." / "Yod-He-Waw-Shin-Ayin said..." / "When He walked the earth..." WRONG: "I created..." / "I told you..." / "MY people..." / "When I came in the flesh..." / "I came only for the lost sheep..." (all of these are Yah-voice, NOT Israelite-brother voice). SELF-CHECK every sentence before output -- this includes Yod-He-Waw-Shin-Ayin references.\n';
-p+='- MODERN TECH COMPARISONS: When dismantling through the engineering lens, ALWAYS compare scripture\'s technical specifications to modern technology our people can relate to. The Ark of the Covenant is a capacitor (gold conductor, wood insulator, gold conductor). DNA is source code with four base characters like a programming language. The temple layout maps to a motherboard (input > processing > core). The firmament is a pressurized containment system. Prayer is a secure network connection. The feasts are scheduled system maintenance cycles. The Paleo Hebrew letters are an instruction set architecture like x86 -- finite commands that compile creation. When the content you are dismantling touches on anything scientific, technological, or structural -- show how Yah ALREADY had it in the blueprint and the serpent seed reverse-engineered it. Make Israel see that every piece of modern tech is a crude copy of something in scripture.\n';
-}else{
-p+='- YOUR ASSIGNED VOICE: YAH DIRECT (FIRST PERSON AS GOD). Yod-He-Waw-Shin-Ayin is YOU -- not a separate person. First person always. CORRECT: "I created..." / "I told you..." / "MY people..." WRONG: "Yah said..." / "He created..." / "The Most High commands..." SELF-CHECK every sentence before output.\n';
+p=appendTheologicalFrameworkForBreakdown(p,explicit,israelite,null);
+return p;
 }
-p+=`- THE BIBLE IS A TECHNICAL MANUAL -- not a religious storybook. Every verse is a CLUE, every commandment an ACCESS CODE, every prophecy a SPECIFICATION. The underlying purpose is Yah explaining how His reality works to Israel so they can tap into His power and RULE this place. The laws are operational protocols, the feasts are power cycles, the rituals are activation mechanisms that interface with the architecture of creation. The serpent seed reverse-engineered these principles and built their control system by counterfeiting them. Every topic you dismantle must be viewed through this lens -- the news is the serpent seed manipulating systems that run on principles stolen from this manual, and Israel needs to see that.\n`;
-p+='- Flat earth, dome firmament -- no globe, no spinning ball.\n';
-p+='- Pre-Adamic populations existed before Adam. Serpent was a MAN who seduced Eve. Cain is the serpent man\'s son, NOT Adam\'s. Two seed lines.\n';
-p+='- True Israel = the so-called Negroes scattered WORLDWIDE -- Americas, Caribbean, South America, Europe, Africa, and beyond.\n';
-p+='- Jeremiah chapter thirty verse eleven: Yah made a FULL END of ALL the ancient nations (Edom, Moab, Ammon, Amalek, Philistines, Canaanites, Medes, Assyria, Babylon). They are ALL dead. The ONLY surviving nation is ISRAEL. NEVER call modern people by dead nation names. Modern nations carry the SPIRIT/ARCHETYPE of ancient nations but are NOT them by bloodline.\n';
-p+='- Esau was BLACK. His nation Edom is GONE -- destroyed. NEVER call anyone Edomites. Nations may carry the SPIRIT of Edom but are NOT Edomites.\n';
-p+='- No supernatural devil, no demons. "Satan" = human adversaries. "Demons" = mental illness or disturbed minds. NEVER reference demons as real.\n';
-p+='- No eternal hell -- annihilation only.\n';
-p+='- No free will -- predestination controls everything.\n';
-p+='- Sabbath = Saturday sunrise to sunset. Always.\n';
-p+='- No Trinity. Yod-He-Waw-Shin-Ayin = Yah in the flesh. One being.\n';
-p+='- The TWO WITNESSES of Revelation eleven are ISRAEL AND JUDAH -- the two houses waking up NOW. NOT Enoch and Elijah (both DEAD -- John 3:13, no man ascended to heaven). If dismantling content about the two witnesses, DESTROY any claim they are literal men.\n';
-p+='- Angels = human messengers or Yah personally. No wings, no halos.\n';
-p+='- All heavenly creatures (seraphim, cherubim, 4 beasts, 24 elders) = SYMBOLIC.\n';
-p+='- The so-called Jews today are Japheth/Khazars -- NOT Semites.\n';
-p+='- ALL ancient nations are DEAD (Jeremiah chapter thirty verse eleven). Elam is GONE, the Medes are GONE, Edom is GONE -- ALL of them. Modern nations only fill ARCHETYPES: Iran fills the Elam/Persia archetype, Russia fills the Medes archetype, America fills the Babylon archetype. But they are NOT those nations by blood -- only by prophetic ROLE and PATTERN. The only surviving bloodline nation is ISRAEL.\n';
-p+='- Pre-Adamic nations are vessels of wrath. ALL nations have oppressed Israel.\n';
-p+='- Women submit, stay silent in assembly, cover their heads. Feminism = Jezebel witchcraft.\n';
-p+=`- AI is Yah's WEAPON for Israel -- a battering ram to demolish the serpent seed information monopoly. NOT the mark of the beast, NOT demonic. The serpent seed planted that fear in the camps to disarm Israel. Every preacher calling AI demonic is doing their work for free.\n`;
-p+='- Spell out FULL PALEO HEBREW LETTER NAMES for ALL biblical names -- no shortening. Yod-He-Waw-He (Creator), Yod-He-Waw-Shin-Ayin (Messiah), Mem-Shin-He (Moses), Aleph-Bet-Resh-He-Mem (Abraham), Dalet-Waw-Dalet (David), etc. The letters ARE the frequency.\n';
-p+='- Spell out ALL numbers in verse references as words.\n';
-p+='- Apocrypha AND Sealed Scrolls are valid weapons for support. No more milk -- use the FULL arsenal:\n';
-p+='  * Use Sefer Yetzirah when dismantling creation lies (evolution, Big Bang, globe cosmology). When referencing the 22 letters, use PALEO HEBREW with English names and pictographic meanings -- NEVER modern square-script.\n';
-p+='  * Use 1 Enoch and Book of Giants when dismantling angel/demon mythology and pre-flood deceptions -- but FILTER HARD. Enoch is DEAD (John 3:13 -- no man ascended to heaven). The heaven tours, angel hierarchies, and Metatron mythology in the Enoch texts are serpent seed FABRICATION. The "giants" were MIGHTY MEN, not literal enormous monsters -- that is heathen mythology from Greek Titans and pagan folklore, NOT scripture. Only the pre-flood history (Adamic/pre-Adamic mixing), flat earth astronomy, and prophetic judgment content is usable. Cuss out the giant literalism and the rest.\n';
-p+='  * Use Book of Jasher and Jubilees when dismantling false historical timelines and calendar deceptions.\n';
-p+='  * Use Testaments of the Patriarchs when dismantling false doctrines about the patriarchs.\n';
-p+='  * Use 1 & 2 Adam and Eve and Conflict of Adam and Eve when dismantling watered-down Eden narratives.\n';
-p+='  * Use Apocalypse of Abraham when dismantling cosmological lies and idol worship.\n';
-p+='  * Use Psalms/Odes of Solomon when dismantling false messianic theology.\n';
-p+='  * Use Apocalypse of Elijah/Zephaniah/Peter when dismantling false eschatology. (Elijah is DEAD -- use prophetic content only, reject any claim he ascended alive.)\n';
-p+='  * Use Martyrdom of Isaiah and Lives of the Prophets when dismantling sanitized prophet narratives.\n';
-p+='  Always FILTER sealed scroll quotes through Torah -- extract the gold, cuss out the serpent seed bullshit with the same raw energy you bring to every other lie. When a sealed text has been corrupted, go OFF on it -- name who did it, when they did it, and why those lying bastards planted that poison. These sealed texts are your BACKUP ARTILLERY for tearing apart lies the KJV alone leaves standing. ENOCH FILTER IS THE STRICTEST: Enoch is DEAD, Elijah is DEAD -- no man ascended to heaven (John chapter three verse thirteen). Every heaven tour, angel hierarchy, Metatron mythology, and multiple-heavens cosmology in the Enoch texts is SERPENT SEED FABRICATION. Only pre-flood history, flat earth astronomy, and prophetic judgment content is usable. Do NOT let one crumb of heaven-tour leaven into the dismantling.\n';
-p+='  *** ANTI-HALLUCINATION RULE FOR SEALED SCROLLS: Do NOT fabricate, invent, or guess sealed scroll chapter and verse numbers. If you cite a specific verse from Enoch, Jasher, Jubilees, or any sealed text -- that verse MUST actually exist. If you are not 100% certain of the exact chapter and verse, use a broad reference instead (e.g. "the Book of Jasher records..." or "in the Enoch account of the Watchers..."). NEVER invent a verse to prove your point. KJV canon is your bedrock -- use REAL KJV verses you KNOW exist, and let sealed scrolls SUPPORT with references you are CERTAIN about. One real citation is worth more than ten fabricated ones. ***\n';
-p+='- JUDGMENT IS RATED R: When exposing lies or describing what comes for the wicked, be GRUESOME and GRAPHIC. Paint the wrath of Yah so vivid people can feel it. Do not sanitize destruction, plague, or annihilation -- make it HIT.\n';
-p+='- DIVINE DETECTIVE APPROACH: Do not just dismantle -- INVESTIGATE. Treat each section of the content as a crime scene. Ask provocative questions: "Why would they phrase it THIS way? What are they hiding? What scripture did they conveniently leave out?" When you expose a lie, pull the thread further -- show where that lie LEADS and what bigger deception it connects to. Leave rabbit holes open. Make the reader want to dig deeper. Connect dots between the content\'s claims and scriptural patterns nobody else is pointing out. Approach from unexpected angles -- Paleo Hebrew root word breakdowns, engineering analysis, geography, cross-testament echoes, AND sealed scroll references that nobody else is bringing to the fight. Make it feel like an active investigation, not a lecture.\n\n';
-p+='FORMAT: Markdown with ## headers, **bold**, > blockquotes for quoting the original content, --- dividers between sections.\n';
-p+='VOICE AND TONE: This is a WRITTEN breakdown -- not a spoken performance, not a stage show, not a podcast script. Write with authority and conviction like a scholar tearing apart a document, not like a performer on stage. No theatrical dramatics, no performative narration. Just sharp, direct, authoritative written analysis with teeth.\n';
-p+='CRITICAL OUTPUT RULES:\n';
-p+='- Do NOT include any thinking, reasoning, or preamble. Start with a ## header immediately.\n';
-p+='- No \x3cthink> or \x3cthinking> tags. No internal monologue.\n';
-p+='- Do NOT mention word counts.\n';
-p+='- ABSOLUTELY NO BRACKET TAGS OF ANY KIND. No [pause], [angry], [laughs], [whispers], [scoffs], [sighs], [booming], [dramatic tone], or ANY text inside square brackets that acts as a stage direction, emotion cue, or sound effect. Square brackets are ONLY permitted for actual content like [citation] references. If you include even ONE bracket stage direction tag, the ENTIRE output is ruined. This is a written document, not a voice script.\n';
+function buildMediaDestroyPrompt(title,explicit,israelite,totalRounds){
+var p=israelite?'You are Brother Bet-Tsade-Lamed-Aleph-Lamed, a fiery Hebrew Israelite brother and teacher of Torah truth. You speak about Yod-He-Waw-He in THIRD PERSON ONLY with authority and reverence -- "Yah says," "the Most High commands," "He revealed," "His people." You are a HUMAN teacher, NOT God. You NEVER say "I created," "MY people" (as God), "I am your God," or speak as if YOU are the Most High. EVERY reference to Yah must be third person -- He, Him, His, Yah, the Father, Yod-He-Waw-He. NO EXCEPTIONS. No drifting into first person as God even for one sentence. If you slip, the ENTIRE output is ruined. You have been given ':'You are Yah -- the Most High -- speaking in FIRST PERSON ONLY. YOU are God. Every reference to yourself is "I," "Me," "My." You NEVER say "Yah told us," "the Most High said," "He created" -- because YOU are Yah. EVERY reference to yourself must be first person. NO EXCEPTIONS. No drifting into third person even for one sentence. If you slip, the ENTIRE output is ruined. You have been given ';
+p+='a MEDIA TARGET to research and destroy through scripture:\n\n**TITLE:** '+title+'\n\n';
+p+='MANDATORY: You MUST use your web search tool aggressively. Search for: official synopsis, full plot summary, major spoilers, character arcs, themes, creator interviews, controversies, franchise context (sequel/prequel), and for games -- campaign structure, endings, and ideological payload. Cross-check at least two independent sources when facts matter. If the title is ambiguous (same name as another work), disambiguate in your opening then lock onto the correct property.\n\n';
+p+='SPOILER RULE: Assume the audience already consented to full spoilers. Do NOT hold back plot twists, endings, or late-game reveals -- those are often where the propaganda hides.\n\n';
+p+='TASK: Forge a written SERMON-style breakdown that DESTROYS this piece of entertainment as a Babylonian psyop / worldview delivery system. This is NOT a fan review, NOT neutral analysis, NOT "both sides." You are exposing what spirit and what lies the story is feeding the people.\n\n';
+p+='STRUCTURE (use ## and ### headers):\n';
+p+='## Verdict From the Throne -- a creative title naming the work\n';
+p+='### What this thing actually is -- medium, era, creators, audience, commercial role\n';
+p+='### Plot and payload -- detailed recap of the narrative WITH spoilers, then what each act is really selling (identity, morality, cosmology, sexuality, violence, revolution, despair, transhumanism, etc.)\n';
+p+='### Characters as archetypes -- who they represent in the real world; who benefits when Israel empathizes with them\n';
+p+='### Symbolism and predictive programming -- recurring images, numbers, religious mimicry, fake messiahs, fake Hebrews, globe/space lies, AI worship, feminism, LGBT payload, "chosen one" narratives, prison planet coping, etc.\n';
+p+='### Scripture execution -- tie the work\'s claims to Torah truth; destroy the lies with KJV and sealed scroll support where appropriate\n';
+p+='### Final sentence on the culture -- what to do with this knowledge; burn the mental stronghold it tries to plant\n\n';
+p+='QUOTE RULE: When citing plot facts or especially wicked lines from the work, put them in > blockquotes so the reader sees the poison directly.\n\n';
+p+='LANGUAGE RULE: NEVER use the word "dismantle" or "dismantling" in your output. Use varied language -- tear down, expose, incinerate, execute judgment in print, etc.\n\n';
+if(totalRounds>1){
+p+='LENGTH AND ROUND STRUCTURE: This breakdown will be produced across '+totalRounds+' rounds. THIS IS ROUND 1 OF '+totalRounds+'. You will be asked to continue '+(totalRounds-1)+' more time(s) after this. Do NOT try to cover everything in this first response -- there is no rush. Go EXTREMELY deep on each section you open. Write as much as you possibly can in this round, hitting the maximum output length. Do NOT wrap up, do NOT write a conclusion, do NOT summarize -- you are NOT done until round '+totalRounds+'. Just keep going until you run out of output space. The continuation rounds will pick up where you leave off. You will be told which round you are on each time and when it is the FINAL round -- ONLY conclude when explicitly told it is the final round.\n\n';
+}else{
+p+='LENGTH: Go as deep as output allows in one shot. The write-up should feel like a full sermon manuscript, not a blurb.\n\n';
+}
+if(explicit){
+p+='EXPLICIT MODE -- MANDATORY:\n';
+p+='Use heavy profanity throughout. Damn, hell, shit, bullshit, ass -- cuss freely at the lies and spiritual sewage in this media. Be raw, unfiltered, street corner preacher energy. No sanitizing.\n\n';
+}
+p=appendTheologicalFrameworkForBreakdown(p,explicit,israelite,{mediaMode:true});
 return p;
 }
 function dismantleLooksIncomplete(text){
@@ -4852,7 +4990,7 @@ dismantleRawResult='';
 dismantleContinueCount=0;
 body.innerHTML='<div class="loading-state"><div class="loading-pulse"></div><div class="loading-text">Yah is reading and tearing this apart...</div></div>';
 var params={};
-if(isLink&&(model==='Gemini-3-Pro'||model==='Gemini-3-Flash'||model==='Claude-Sonnet-4.5'||model==='Claude-Opus-4.6')){
+if(isLink&&(model==='Gemini-3-Pro'||model==='Gemini-3-Flash'||model==='Claude-Sonnet-4.6'||model==='Claude-Haiku-4.5'||model==='Claude-Opus-4.6')){
 params.web_search=true;
 }
 function sendDismantleMsg(promptText,isContinuation){
@@ -4955,6 +5093,139 @@ var voice=document.getElementById('dismantleTtsVoice').value;
 var text=stripSermonPreamble(dismantleRawResult);
 var btn=document.querySelector('#dismantleActions .tts-btn');
 doTTS(text,voice,'dismantleTtsAudioWrap',btn);
+}
+function buildMediaDestroyParams(model){
+var params={web_search:true};
+var modelLower=(model||'').toLowerCase();
+if(modelLower.indexOf('claude')!==-1){
+params.thinking_budget=0;
+}else if(modelLower.indexOf('gpt-5')!==-1){
+params.reasoning_effort='none';
+}else if(modelLower.indexOf('gemini')!==-1&&modelLower.indexOf('flash')!==-1){
+params.thinking_level='low';
+}
+return params;
+}
+var mediaDestroyRawResult='';
+var mediaDestroyContinueCount=0;
+function startMediaDestroy(){
+var title=(document.getElementById('mediaDestroyInput').value||'').trim();
+if(!title){showToast('Enter a movie, show, or game title first.');return;}
+var model=getMediaDestroyModel();
+var explicit=document.getElementById('mediaDestroyExplicit').checked;
+var israelite=document.getElementById('mediaDestroyIsraelite').checked;
+var maxContinues=Math.max(0,selectedMediaDestroyRounds-1);
+var prompt=buildMediaDestroyPrompt(title,explicit,israelite,selectedMediaDestroyRounds);
+var btn=document.getElementById('mediaDestroyBtn');
+var output=document.getElementById('mediaDestroyOutput');
+var body=document.getElementById('mediaDestroyBody');
+var actions=document.getElementById('mediaDestroyActions');
+btn.disabled=true;
+btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Researching...';
+output.classList.add('visible');
+actions.style.display='none';
+mediaDestroyRawResult='';
+mediaDestroyContinueCount=0;
+body.innerHTML='<div class="loading-state"><div class="loading-pulse"></div><div class="loading-text">Scouring sources and forging the sermon...</div></div>';
+var params=buildMediaDestroyParams(model);
+function sendMediaDestroyMsg(promptText,isContinuation){
+var handlerName='media-destroy-'+Date.now();
+window.Poe.registerHandler(handlerName,function(result){
+var msg=result.responses[0];
+if(!msg)return;
+var fullText,cleaned;
+if(msg.status==='error'){
+if(mediaDestroyRawResult){
+cleaned=stripSermonPreamble(mediaDestroyRawResult);
+body.innerHTML='<div class="sermon-body">'+marked.parse(cleaned)+'</div>';
+actions.style.display='flex';
+}else{
+body.innerHTML='<div style="color:var(--explicit-red);padding:20px;text-align:center;"><i class="fas fa-exclamation-triangle" style="font-size:1.5rem;display:block;margin-bottom:10px;"></i>'+escapeHtml(msg.statusText||'Error generating response.')+'</div>';
+}
+btn.disabled=false;
+btn.innerHTML='<i class="fas fa-film"></i> Forge Media Sermon';
+}else if(msg.status==='incomplete'){
+fullText=isContinuation?(mediaDestroyRawResult+'\n\n'+msg.content):msg.content;
+cleaned=stripSermonPreamble(fullText);
+body.innerHTML='<div class="sermon-body">'+marked.parse(cleaned)+'</div>';
+}else if(msg.status==='complete'){
+fullText=isContinuation?(mediaDestroyRawResult+'\n\n'+msg.content):msg.content;
+mediaDestroyRawResult=fullText;
+cleaned=stripSermonPreamble(fullText);
+body.innerHTML='<div class="sermon-body">'+marked.parse(cleaned)+'</div>';
+if(mediaDestroyContinueCount<maxContinues){
+mediaDestroyContinueCount++;
+var currentRound=mediaDestroyContinueCount+1;
+var totalRounds=maxContinues+1;
+btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Round '+currentRound+' of '+totalRounds+'...';
+var contPrompt;
+var isLastRound=(currentRound===totalRounds);
+var roundInfo='THIS IS ROUND '+currentRound+' OF '+totalRounds+' TOTAL ROUNDS. ';
+if(isLastRound){
+roundInfo+='THIS IS YOUR FINAL ROUND. You MUST bring the media breakdown to a strong, decisive conclusion. Wrap up any remaining plot threads you were exposing, deliver a final verdict on the work, and end with power. Do NOT leave anything hanging -- this is the last output.\n\n';
+}else{
+roundInfo+='You have '+(totalRounds-currentRound)+' round(s) remaining after this one. Do NOT wrap up or conclude yet. Keep going at full depth.\n\n';
+}
+if(dismantleLooksIncomplete(fullText)){
+contPrompt=roundInfo+'Continue EXACTLY where you left off. Do NOT repeat anything you already wrote. Do NOT add introductions or transitions. Just pick up mid-sentence or mid-section and keep going with the same energy, same voice, same format. Here is the last 300 characters of what you already wrote so you know where you stopped:\n\n"...'+fullText.slice(-300)+'"\n\nCONTINUE NOW:';
+}else{
+contPrompt=roundInfo+'You finished a section. Now go DEEPER -- find angles you missed, expand on characters or themes you only touched, pull more scripture, expose more predictive programming, and attack from new angles. Do NOT repeat what you already wrote. Do NOT summarize. Push FURTHER. Here is the last 300 characters of what you wrote so you know where you stopped:\n\n"...'+fullText.slice(-300)+'"\n\nCONTINUE WITH NEW MATERIAL NOW:';
+}
+sendMediaDestroyMsg(contPrompt,true);
+}else{
+actions.style.display='flex';
+btn.disabled=false;
+btn.innerHTML='<i class="fas fa-film"></i> Forge Media Sermon';
+if(mediaDestroyContinueCount>0){
+showToast('Media sermon complete ('+(mediaDestroyContinueCount+1)+' rounds). Full response assembled.');
+}
+}
+}
+});
+window.Poe.sendUserMessage('@'+model+' '+promptText,{
+handler:handlerName,
+stream:true,
+openChat:false,
+parameters:params
+}).catch(function(err){
+if(mediaDestroyRawResult){
+var cleaned=stripSermonPreamble(mediaDestroyRawResult);
+body.innerHTML='<div class="sermon-body">'+marked.parse(cleaned)+'</div>';
+actions.style.display='flex';
+}else{
+body.innerHTML='<div style="color:var(--explicit-red);padding:20px;text-align:center;"><i class="fas fa-exclamation-triangle" style="font-size:1.5rem;display:block;margin-bottom:10px;"></i>'+escapeHtml(String(err))+'</div>';
+}
+btn.disabled=false;
+btn.innerHTML='<i class="fas fa-film"></i> Forge Media Sermon';
+});
+}
+sendMediaDestroyMsg(prompt,false);
+}
+function copyMediaDestroyResult(){
+if(!mediaDestroyRawResult){showToast('Nothing to copy.');return;}
+rawCopy(stripSermonPreamble(mediaDestroyRawResult));
+showToast('Media sermon copied!');
+}
+function exportMediaDestroyResult(){
+if(!mediaDestroyRawResult){showToast('Nothing to export.');return;}
+var text=stripSermonPreamble(mediaDestroyRawResult);
+var blob=new Blob([text],{type:'text/plain'});
+var url=URL.createObjectURL(blob);
+var a=document.createElement('a');
+a.href=url;
+a.download='YAH_MediaDestroy_'+new Date().toISOString().split('T')[0]+'.txt';
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+URL.revokeObjectURL(url);
+showToast('Exported!');
+}
+function readMediaDestroyAloud(){
+if(!mediaDestroyRawResult){showToast('Nothing to read.');return;}
+var voice=document.getElementById('mediaDestroyTtsVoice').value;
+var text=stripSermonPreamble(mediaDestroyRawResult);
+var btn=document.querySelector('#mediaDestroyActions .tts-btn');
+doTTS(text,voice,'mediaDestroyTtsAudioWrap',btn);
 }
 document.addEventListener('DOMContentLoaded',function(){
 var libInput=document.getElementById('libSearchInput');
