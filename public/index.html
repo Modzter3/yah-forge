@@ -4968,6 +4968,28 @@ if(!/[.!?"')}\]]$/.test(last)&&last.length>30)return true;
 }
 return false;
 }
+/* Continuation for multi-round dismantle/media: anchor locked subject + long tail (sermon-style tandem, not a fresh prompt). */
+function buildBreakdownContinuationPrompt(opts){
+opts=opts||{};
+var roundInfo=opts.roundInfo||'';
+var accumulated=(opts.accumulatedText||'').trim();
+var tailLen=typeof opts.tailLength==='number'?opts.tailLength:3500;
+var tail=accumulated.length>tailLen?accumulated.slice(-tailLen):accumulated;
+var lockLabel=opts.lockLabel||'LOCKED SUBJECT (do not drift -- this is the ONLY thing you are analyzing):\n';
+var lockBody=(opts.lockBody||'').trim();
+var lockMax=opts.lockMaxChars;
+if(lockMax&&lockBody.length>lockMax){
+var keepHead=Math.floor(lockMax*0.42);
+var keepTail=lockMax-keepHead-90;
+lockBody=lockBody.slice(0,keepHead)+'\n\n[... omitted for length ...]\n\n'+lockBody.slice(-keepTail);
+}
+var modeHint=opts.modeHint||'Continue the SAME written breakdown as one continuous manuscript.';
+var looksCut=dismantleLooksIncomplete(accumulated);
+var branch=looksCut
+?'CONTINUATION MODE: EXACT TANDEM. Pick up mid-thought if needed. Do NOT restart from the top. Do NOT re-do the opening sections. Do NOT write a new ## verdict or re-summarize the whole plot from scratch. Append ONLY what still belongs AFTER the text below.\n'
+:'CONTINUATION MODE: DEEPEN. You stopped at a natural break -- push further into material you have not covered yet. Still the SAME manuscript -- no new opener, no second "Part 1", no duplicate headers for sections you already finished.\n';
+return roundInfo+modeHint+'\n\n'+lockLabel+lockBody+'\n\n---\n\nMANUSCRIPT SO FAR (read for flow only -- your new writing continues AFTER this; do not repeat it):\n\n'+accumulated+'\n\n---\n\nWHERE YOU STOPPED (last '+Math.min(tailLen,accumulated.length)+' characters -- match voice, headers, and markdown style and continue seamlessly):\n\n"...'+tail+'"\n\n'+branch+'OUTPUT: Markdown only. Start with the next words or the next ##/### section that logically follows -- no preamble, no "Continuing from...", no apology, no meta.\n';
+}
 var dismantleContinueCount=0;
 function startDismantle(){
 var input=document.getElementById('dismantleInput').value.trim();
@@ -5033,11 +5055,15 @@ roundInfo+='THIS IS YOUR FINAL ROUND. You MUST bring the breakdown to a strong, 
 }else{
 roundInfo+='You have '+(totalRounds-currentRound)+' round(s) remaining after this one. Do NOT wrap up or conclude yet. Keep going at full depth.\n\n';
 }
-if(dismantleLooksIncomplete(fullText)){
-contPrompt=roundInfo+'Continue EXACTLY where you left off. Do NOT repeat anything you already wrote. Do NOT add introductions or transitions. Just pick up mid-sentence or mid-section and keep going with the same energy, same voice, same format. Here is the last 300 characters of what you already wrote so you know where you stopped:\n\n"...'+fullText.slice(-300)+'"\n\nCONTINUE NOW:';
-}else{
-contPrompt=roundInfo+'You finished a section. Now go DEEPER -- find things you missed, expand on points you only touched briefly, pull more threads, expose more connections, dig into scripture you did not cite yet, and attack from new angles. Do NOT repeat what you already wrote. Do NOT summarize. Push FURTHER into the content. Here is the last 300 characters of what you wrote so you know where you stopped:\n\n"...'+fullText.slice(-300)+'"\n\nCONTINUE WITH NEW MATERIAL NOW:';
-}
+contPrompt=buildBreakdownContinuationPrompt({
+roundInfo:roundInfo,
+accumulatedText:fullText,
+tailLength:3500,
+lockLabel:'LOCKED SOURCE (the ONLY article / text / URL you are tearing apart -- do not pivot to a different topic):\n',
+lockBody:input,
+lockMaxChars:isLink?12000:14000,
+modeHint:'Continue the SAME dismantling breakdown as one continuous manuscript -- same voice, same format, same target.'
+});
 sendDismantleMsg(contPrompt,true);
 }else{
 actions.style.display='flex';
@@ -5166,11 +5192,15 @@ roundInfo+='THIS IS YOUR FINAL ROUND. You MUST bring the media breakdown to a st
 }else{
 roundInfo+='You have '+(totalRounds-currentRound)+' round(s) remaining after this one. Do NOT wrap up or conclude yet. Keep going at full depth.\n\n';
 }
-if(dismantleLooksIncomplete(fullText)){
-contPrompt=roundInfo+'Continue EXACTLY where you left off. Do NOT repeat anything you already wrote. Do NOT add introductions or transitions. Just pick up mid-sentence or mid-section and keep going with the same energy, same voice, same format. Here is the last 300 characters of what you already wrote so you know where you stopped:\n\n"...'+fullText.slice(-300)+'"\n\nCONTINUE NOW:';
-}else{
-contPrompt=roundInfo+'You finished a section. Now go DEEPER -- find angles you missed, expand on characters or themes you only touched, pull more scripture, expose more predictive programming, and attack from new angles. Do NOT repeat what you already wrote. Do NOT summarize. Push FURTHER. Here is the last 300 characters of what you wrote so you know where you stopped:\n\n"...'+fullText.slice(-300)+'"\n\nCONTINUE WITH NEW MATERIAL NOW:';
-}
+contPrompt=buildBreakdownContinuationPrompt({
+roundInfo:roundInfo,
+accumulatedText:fullText,
+tailLength:3500,
+lockLabel:'LOCKED MEDIA TITLE (the ONLY movie / show / game you are destroying -- do not switch titles or franchises):\n',
+lockBody:title,
+lockMaxChars:1200,
+modeHint:'Continue the SAME media sermon as one continuous manuscript -- same voice, same format, same target work.'
+});
 sendMediaDestroyMsg(contPrompt,true);
 }else{
 actions.style.display='flex';
