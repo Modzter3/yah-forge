@@ -29,7 +29,9 @@ export default async function handler(req) {
 
   // Pass any supported model parameters through
   if (parameters.thinking_budget  !== undefined) payload.thinking_budget  = parameters.thinking_budget;
+  if (parameters.thinking_level   !== undefined) payload.thinking_level   = parameters.thinking_level;
   if (parameters.reasoning_effort !== undefined) payload.reasoning_effort = parameters.reasoning_effort;
+  if (parameters.web_search       !== undefined) payload.web_search       = parameters.web_search;
   if (parameters.aspect_ratio     !== undefined) payload.aspect_ratio     = parameters.aspect_ratio;
   if (parameters.image_only       !== undefined) payload.image_only       = parameters.image_only;
   if (parameters.duration         !== undefined) payload.duration         = parameters.duration;
