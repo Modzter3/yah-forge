@@ -359,6 +359,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .sermon-action-btn{flex:1;min-width:130px;padding:12px 16px;border-radius:8px;font-family:'Fira Code',monospace;font-size:0.78rem;cursor:pointer;transition:all 0.2s;text-align:center;letter-spacing:0.03em;border:none;}
 .sermon-action-btn.copy-all{background:linear-gradient(135deg,var(--gold-dim),var(--gold));color:#0A0A0F;font-weight:600;}
 .sermon-action-btn.copy-all:hover{transform:scale(1.02);box-shadow:0 4px 16px rgba(212,160,23,0.3);}
+.sermon-action-btn.copy-plain{background:linear-gradient(135deg,rgba(212,160,23,0.55),rgba(212,160,23,0.78));color:#0A0A0F;font-weight:600;}
+.sermon-action-btn.copy-plain:hover{transform:scale(1.02);box-shadow:0 4px 16px rgba(212,160,23,0.2);}
 .sermon-action-btn.export-btn{background:var(--bg-card);border:1px solid var(--gold-dim);color:var(--gold);}
 .sermon-action-btn.export-btn:hover{background:rgba(212,160,23,0.08);}
 .sermon-action-btn.tts-btn{background:var(--bg-card);border:1px solid var(--accent-blue);color:var(--accent-blue);}
@@ -696,6 +698,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <div class="sermon-body" id="dismantleBody"></div>
       <div class="dismantle-actions" id="dismantleActions" style="display:none;">
         <button class="sermon-action-btn copy-all" onclick="copyDismantleResult()"><i class="fas fa-copy"></i> Copy</button>
+        <button class="sermon-action-btn copy-plain" onclick="copyDismantleResultPlain()"><i class="fas fa-align-left"></i> Copy Plain</button>
         <button class="sermon-action-btn export-btn" onclick="exportDismantleResult()"><i class="fas fa-download"></i> Export</button>
         <div class="tts-bar" style="width:100%;margin-top:8px;">
           <span class="tts-label"><i class="fas fa-volume-high"></i> Voice:</span>
@@ -779,6 +782,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <div class="sermon-body" id="mediaBody"></div>
       <div class="dismantle-actions" id="mediaActions" style="display:none;">
         <button class="sermon-action-btn copy-all" onclick="copyMediaResult()"><i class="fas fa-copy"></i> Copy</button>
+        <button class="sermon-action-btn copy-plain" onclick="copyMediaResultPlain()"><i class="fas fa-align-left"></i> Copy Plain</button>
         <button class="sermon-action-btn save-lib" onclick="saveMediaToLibrary()"><i class="fas fa-bookmark"></i> Save to Library</button>
         <button class="sermon-action-btn export-btn" onclick="exportMediaResult()"><i class="fas fa-download"></i> Export</button>
         <div class="tts-bar" style="width:100%;margin-top:8px;">
@@ -939,6 +943,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <div class="sermon-output" id="libModalBody"></div>
     <div class="sermon-actions" style="display:flex;">
       <button class="sermon-action-btn copy-all" onclick="copyLibrarySermon()"><i class="fas fa-copy"></i> Copy All</button>
+      <button class="sermon-action-btn copy-plain" onclick="copyLibrarySermonPlain()"><i class="fas fa-align-left"></i> Copy Plain</button>
       <button class="sermon-action-btn export-btn" onclick="exportLibrarySermon()"><i class="fas fa-download"></i> Export to File</button>
       <button class="sermon-action-btn export-btn" style="border-color:var(--crimson-glow);color:var(--crimson-glow);" onclick="deleteLibrarySermon()"><i class="fas fa-trash"></i> Delete</button>
       <div class="tts-bar">
@@ -1042,6 +1047,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     </div>
     <div class="sermon-actions" id="sermonActions" style="display:none;">
       <button class="sermon-action-btn copy-all" onclick="copyAllSermon()"><i class="fas fa-copy"></i> Copy All</button>
+      <button class="sermon-action-btn copy-plain" onclick="copyAllSermonPlain()"><i class="fas fa-align-left"></i> Copy Plain</button>
       <button class="sermon-action-btn export-btn" onclick="exportSermon()"><i class="fas fa-download"></i> Export to File</button>
       <div class="tts-bar">
         <span class="tts-label"><i class="fas fa-volume-high"></i> Voice:</span>
@@ -2627,6 +2633,11 @@ if(!sermonPartsCombined){showToast('No sermon to copy.');return;}
 rawCopy(sermonPartsCombined,null);
 showToast('All '+sermonPartsRaw.length+' parts copied to clipboard!');
 }
+function copyAllSermonPlain(){
+if(!sermonPartsCombined){showToast('No sermon to copy.');return;}
+rawCopy(stripMarkdownForTTS(sermonPartsCombined),null);
+showToast('Copied as plain text (no markdown) -- ready for ElevenLabs!');
+}
 function exportSermon(){
 if(!sermonPartsCombined){showToast('No sermon to export.');return;}
 var title=currentTopic?currentTopic.title.replace(/[^a-zA-Z0-9 ]/g,'').replace(/\s+/g,'_'):'Sermon';
@@ -4165,6 +4176,12 @@ var entry=sermonLibrary[activeLibIndex];
 rawCopy(entry.combined,null);
 showToast('All '+sermonPartsRaw.length+' parts copied to clipboard!');
 }
+function copyLibrarySermonPlain(){
+if(activeLibIndex<0)return;
+var entry=sermonLibrary[activeLibIndex];
+rawCopy(stripMarkdownForTTS(entry.combined),null);
+showToast('Copied as plain text (no markdown) -- ready for ElevenLabs!');
+}
 function exportLibrarySermon(){
 if(activeLibIndex<0)return;
 var entry=sermonLibrary[activeLibIndex];
@@ -5490,6 +5507,11 @@ if(!dismantleRawResult){showToast('Nothing to copy.');return;}
 rawCopy(stripSermonPreamble(dismantleRawResult));
 showToast('Dismantle result copied!');
 }
+function copyDismantleResultPlain(){
+if(!dismantleRawResult){showToast('Nothing to copy.');return;}
+rawCopy(stripMarkdownForTTS(stripSermonPreamble(dismantleRawResult)));
+showToast('Copied as plain text (no markdown) -- ready for ElevenLabs!');
+}
 function exportDismantleResult(){
 if(!dismantleRawResult){showToast('Nothing to export.');return;}
 var text=stripSermonPreamble(dismantleRawResult);
@@ -5696,6 +5718,12 @@ if(!mediaRawResult){showToast('Nothing to copy.');return;}
 var text=nuclearStripSources(stripSermonPreamble(mediaRawResult));
 rawCopy(text);
 showToast('Media destruction copied!');
+}
+function copyMediaResultPlain(){
+if(!mediaRawResult){showToast('Nothing to copy.');return;}
+var text=stripMarkdownForTTS(nuclearStripSources(stripSermonPreamble(mediaRawResult)));
+rawCopy(text);
+showToast('Copied as plain text (no markdown) -- ready for ElevenLabs!');
 }
 function exportMediaResult(){
 if(!mediaRawResult){showToast('Nothing to export.');return;}
