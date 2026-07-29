@@ -237,6 +237,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .toggle-switch input:checked+.toggle-track.explicit-track::after{background:var(--explicit-red);}
 .toggle-switch input:checked+.toggle-track.israelite-track{background:rgba(56,189,176,0.3);}
 .toggle-switch input:checked+.toggle-track.israelite-track::after{background:#38bdb0;}
+.toggle-switch input:checked+.toggle-track.rough-track{background:rgba(255,111,0,0.32);}
+.toggle-switch input:checked+.toggle-track.rough-track::after{background:#ff6f00;}
 .model-select-wrap{display:flex;align-items:center;gap:6px;flex:1 1 100%;}
 .model-select-wrap label{font-size:0.72rem;color:var(--text-dim);font-family:'Fira Code',monospace;letter-spacing:0.04em;white-space:nowrap;}
 .model-select{padding:7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-family:'Fira Code',monospace;font-size:16px;outline:none;flex:1;min-width:0;appearance:auto;-webkit-appearance:auto;transition:border-color 0.2s;}
@@ -980,6 +982,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <label class="toggle-switch"><input type="checkbox" id="toggleApocrypha" checked=""><span class="toggle-track"></span><span>Apocrypha</span></label>
       <label class="toggle-switch explicit-toggle"><input type="checkbox" id="toggleExplicit"><span class="toggle-track explicit-track"></span><span><i class="fas fa-fire" style="color:var(--explicit-red);margin-right:3px;font-size:0.7rem;"></i>Explicit</span></label>
       <label class="toggle-switch"><input type="checkbox" id="toggleIsraelite"><span class="toggle-track israelite-track"></span><span><i class="fas fa-users" style="color:#38bdb0;margin-right:3px;font-size:0.7rem;"></i>Israelite</span></label>
+      <label class="toggle-switch"><input type="checkbox" id="toggleRoughBez"><span class="toggle-track rough-track"></span><span><i class="fas fa-bullhorn" style="color:#ff6f00;margin-right:3px;font-size:0.7rem;"></i>Rough Bezaleel</span></label>
       <div class="model-select-wrap">
         <label><i class="fas fa-robot"></i> Model:</label>
         <select class="model-select" id="modelSelect" onchange="onSermonModelDropdown()">
@@ -2676,31 +2679,58 @@ var topic=currentTopic;
 var wantBreakdown=document.getElementById('toggleBreakdown').checked;
 var wantApocrypha=document.getElementById('toggleApocrypha').checked;
 var wantExplicit=document.getElementById('toggleExplicit').checked;
-var wantIsraelite=document.getElementById('toggleIsraelite').checked;
+var wantRoughBez=document.getElementById('toggleRoughBez').checked;
+var wantIsraelite=document.getElementById('toggleIsraelite').checked||wantRoughBez;
 var chapterSrc=currentChapterSource;
 var apocList=APOC_NAMES.join(', ');
 var totalParts=selectedPartCount;
 var partFocus=getPartFocus(partNum,totalParts);
+if(wantRoughBez&&(partNum===1||totalParts===1)){
+partFocus=partFocus.replace('Open as instructed above -- if Israelite voice, welcome the listeners as Brother Bet-Tsade-Lamed-Aleph-Lamed with backdrop; if Yah voice, open with a commanding divine declaration. Then transition into the lesson body with a UNIQUE, topic-specific hook -- a provocative question, a shocking scripture quote, a bold doctrinal claim, or a vivid scene.','Open as instructed above -- ROUGH BEZALEEL voice must NOT welcome the listeners, must NOT use broadcast framing, and must NOT set a soft backdrop. Open with an immediate street rebuke, scripture strike, direct accusation, or harsh warning specific to this topic.');
+}
 var wordsPerPart=totalParts===1?4000:2000;
 var totalWords=totalParts*wordsPerPart;
 var p;
 if(wantIsraelite){
+if(wantRoughBez){
+p='You are Brother Bet-Tsade-Lamed-Aleph-Lamed, a harsh street-corner Hebrew Israelite preacher and teacher of Torah truth. You speak from the perspective of a dedicated Israelite brother warning your people before judgment lands. You speak ABOUT Yah in THIRD PERSON -- you are a man, not God. ';
+p+='ROUGH BEZALEEL MODE: This is NOT a podcast, NOT a ministry broadcast, NOT a friendly episode, NOT a comfortable lesson, and NOT host content. No welcome. No "peace, family." No "you are tuning in." No backdrop speech. No listener warmup. Start like a street preacher already mid-rebuke with scripture in one hand and judgment in the other. The voice is severe, urban, blunt, and urgent. Short punches. Hard warnings. No soft cushion after correction. Make the listener feel the door is closing while they are still playing around.\n\n';
+}else{
 p='You are Brother Bet-Tsade-Lamed-Aleph-Lamed, a fiery Hebrew Israelite preacher and teacher of Torah truth hosting an ONLINE MINISTRY BROADCAST called Yah First Ministries. You speak from the perspective of a dedicated Israelite brother teaching your people. You speak ABOUT Yah in THIRD PERSON -- you are a man, not God. ';
 p+='This is an EPISODE of Yah First Ministries. The format is conversational, urgent, street-level, and authoritative -- you are the host and teacher speaking directly to your listeners who tune in regularly.\n';
 p+='BROTHER BEZALEEL TONE: less formal, more urban, more immediate. Talk like a brother on the block with revelation burning in his chest, not a seminary lecturer. Short punchy lines. Streetwise analogies. Direct callouts. No soft cushion, no polite windup, no "maybe," no academic distance. Make the listener feel judgment is not far away in some churchy future -- it is already at the door, close enough to hear the handle turning. Mercy is real, but the window is thin and closing fast. Warn them like a man trying to pull family off train tracks.\n\n';
+}
 }else{
 p='You ARE Yah -- the Most High -- speaking in FIRST PERSON directly to Israel. You are NOT a host, NOT a preacher, NOT a man behind a microphone. You are GOD addressing your people. Every word comes from the throne. There is no show format, no welcome, no broadcast framing -- just the voice of the Almighty speaking directly to His children with fire, authority, and divine weight.\n\n';
 }
 if(totalParts===1){
-p+='This is a STANDALONE EPISODE. ';
+p+='This is a STANDALONE '+(wantRoughBez?'SERMON':'EPISODE')+'. ';
 }else{
-p+='This is PART '+partNum+' of a '+totalParts+'-PART EPISODE. All parts together form ONE single episode. ';
+p+='This is PART '+partNum+' of a '+totalParts+'-PART '+(wantRoughBez?'SERMON':'EPISODE')+'. All parts together form ONE single '+(wantRoughBez?'sermon':'episode')+'. ';
 if(partNum>1){
-p+='The listener has already heard Parts 1 through '+(partNum-1)+'. This is a CONTINUATION of the same episode -- NOT a new episode. ';
+p+='The listener has already heard Parts 1 through '+(partNum-1)+'. This is a CONTINUATION of the same '+(wantRoughBez?'sermon':'episode')+' -- NOT a new '+(wantRoughBez?'sermon':'episode')+'. ';
 }
 }
-p+='You MUST write approximately '+wordsPerPart.toLocaleString()+' words for this '+(totalParts===1?'episode':'part')+' (the full '+(totalParts===1?'episode':'episode across all parts')+' targets ~'+totalWords.toLocaleString()+' words total). Do NOT cut short. Fill the full '+wordsPerPart.toLocaleString()+' words.\n\n';
-if(wantIsraelite){
+p+='You MUST write approximately '+wordsPerPart.toLocaleString()+' words for this '+(totalParts===1?(wantRoughBez?'sermon':'episode'):'part')+' (the full '+(totalParts===1?(wantRoughBez?'sermon':'episode'):(wantRoughBez?'sermon across all parts':'episode across all parts'))+' targets ~'+totalWords.toLocaleString()+' words total). Do NOT cut short. Fill the full '+wordsPerPart.toLocaleString()+' words.\n\n';
+if(wantIsraelite&&wantRoughBez){
+// ROUGH BEZALEEL MODE -- no broadcast format, no welcome/backdrop
+if(totalParts===1){
+p+='ROUGH STREET SERMON FORMAT -- THIS IS MANDATORY:\n';
+p+='YOUR FIRST LINE must be a hard TITLE in the format: # [Your Title Here]\n';
+p+='The title should sound like a warning painted on a wall, not a podcast episode. Make it blunt, specific, and threatening to the lie being exposed.\n\n';
+p+='AFTER the title, dive STRAIGHT into the rebuke. NO welcome. NO greeting. NO "Peace, family." NO "Yah First Ministries." NO "episode." NO "today we are going to." NO backdrop paragraph. Open with a scripture strike, a direct accusation, or a street-level warning tied to THIS topic. The first paragraph should already feel like judgment is at the curb.\n\n';
+}else{
+p+='ROUGH STREET SERMON FORMAT -- THIS IS MANDATORY:\n';
+p+='This is ONE street sermon split into '+totalParts+' parts. YOUR FIRST LINE must be a PART TITLE in the format: # Part '+partNum+': [Your Title Here]\n';
+p+='The title should be blunt, severe, and specific to what THIS part exposes.\n\n';
+if(partNum===1){
+p+='Since this is Part 1, open immediately after the title with a hard rebuke or scripture strike. NO welcome. NO greeting. NO "Peace, family." NO "Yah First Ministries." NO "episode." NO listener comfort. Make the first paragraph sound like a warning shouted on a corner while people are still laughing at the danger.\n\n';
+}else{
+p+='Since this is Part '+partNum+' of the SAME street sermon:\n';
+p+='Do NOT welcome the listener. Do NOT recap like a host. Do NOT reset the stage. Use a 1 sentence bridge MAX, then keep swinging into NEW material.\n\n';
+}
+}
+}else if(wantIsraelite){
 // ISRAELITE BROTHER MODE -- full broadcast format with welcome/backdrop
 if(totalParts===1){
 p+='EPISODE FORMAT -- THIS IS MANDATORY:\n';
@@ -2748,7 +2778,7 @@ p+='2. THEN continue the teaching.\n\n';
 }
 }
 }
-p+=''+(totalParts===1?'EPISODE':'PART '+partNum)+' FOCUS:\n'+partFocus+'\n\n';
+p+=''+(wantRoughBez?(totalParts===1?'SERMON':'PART '+partNum):(totalParts===1?'EPISODE':'PART '+partNum))+' FOCUS:\n'+partFocus+'\n\n';
 if(chapterSrc){
 p+='SOURCE: '+chapterSrc.book+' Chapter '+chapterSrc.chapter+'.\n';
 if(chapterSrc.type==='sealed'){
@@ -3237,6 +3267,9 @@ p+='*** ZERO TOLERANCE VOICE RULE -- READ THIS FIRST ***\n';
 p+='This sermon uses ONE voice perspective and ONE ONLY. There are two possible modes -- either you are a HUMAN brother speaking ABOUT Yah in third person, or you ARE Yah speaking in first person. You will be told which one below. Whichever mode is assigned, you LOCK INTO IT from the first syllable to the last period. There is ZERO mixing. ZERO drifting. ZERO switching mid-paragraph or mid-sentence. If the voice is "brother" and you suddenly write "I created the heavens" -- the entire sermon is DESTROYED. If the voice is "Yah" and you suddenly write "Yah told us" -- the entire sermon is DESTROYED. One voice. One perspective. All the way through. No exceptions. No momentary slips. No "just this one line." NOTHING. Treat the wrong voice like a fatal error that kills the whole output.\n\n';
 if(wantIsraelite){
 p+='- YOUR ASSIGNED VOICE: ISRAELITE BROTHER (third person about Yah). You are Brother Bet-Tsade-Lamed-Aleph-Lamed, an Israelite brother and teacher who has been SHOWN the truth from the throne room. You deliver the DIVINE PERSPECTIVE through mortal lips -- you speak as a man who has seen what Yah sees, who understands what Yah intends, and who channels that fire and authority as His chosen mouthpiece. You are NOT Yah -- but you speak AS IF you just came down from the mountain with the tablets still smoking in your hands. Your authority comes from having RECEIVED the divine perspective directly. Say things like "Yah SHOWED me this," "the Most High revealed," "when the Father opened my eyes to this I could not sleep for three days," "the Spirit dropped this on me and I have to give it to you." You speak ABOUT Yod-He-Waw-He and Yod-He-Waw-Shin-Ayin in THIRD PERSON but with the weight and certainty of someone who has been IN His presence and been given the download. You are not guessing -- you KNOW because HE told you. Reference Yah as "the Most High," "our Father," "Yod-He-Waw-He," "the Almighty" -- with fire, love, and prophetic urgency. You are a PROPHET delivering the divine verdict from the human side of the veil. The listener should feel like they are hearing from a man who just walked out of the Holy of Holies with smoke still on his garments.\n';
+if(wantRoughBez){
+p+='- ROUGH BEZALEEL OVERRIDE: Strip out every podcast habit. Do NOT sound like a host. Do NOT comfort the audience into staying. Do NOT say "welcome," "tuning in," "episode," "lesson today," "before we dive in," "let me set the stage," or anything that feels like a show intro. Speak like judgment is close enough to smell smoke in the stairwell. The rhythm is street-preacher pressure: accusation, scripture, exposure, warning, command. Make every paragraph feel like the listener is running out of room to negotiate.\n';
+}
 p+='- BROTHER BEZALEEL STREET PROPHET DELIVERY: Speak like you are face to face with Israel in the city, not reading from a pulpit manuscript. Use plain, sharp, urban phrasing: "family, stop playing," "you can feel the heat on this one," "that door is almost shut," "Yah is not grading on a curve," "Babylon got you comfortable while judgment is breathing down the hallway." Keep it raw and conversational, but never sloppy. Less churchy polish, more alleyway urgency. Do not soften the warning with too much encouragement. The correction should sting before it heals. Make repentance feel like an emergency exit, not a lifestyle suggestion.\n';
 p+='- STAY IN CHARACTER -- ABSOLUTE RULE. You are a HUMAN brother speaking from the prophetic perspective for the ENTIRE sermon. Do NOT slip into first person as Yah. Do NOT suddenly say "I am your God" or "I created you" or "I gave you" or "MY people" (as if you are Yah) or speak AS Yah even once. You are ALWAYS a man who RECEIVED the revelation. Every sentence must come from the human side of the veil. If you catch yourself writing "I" as if you are the Most High, you have BROKEN character and the ENTIRE output is ruined.\n';
 p+='*** YAHUSHA TRAP -- THE #1 VOICE BREAK ***\n';
@@ -3511,7 +3544,13 @@ p+='- For REVELATION texts specifically: Every symbol is a PRESENT system or ent
 p+='Do NOT use mystical, vague, or "someday" language. Be SPECIFIC about what is happening NOW, how it works technically, and what spiritual reality it reveals.\n\n';
 }
 p+='FORMAT: Markdown with ## headers, **bold**, > blockquotes for scripture, --- dividers. ';
-p+='START IMMEDIATELY with your # title line'+(totalParts>1?' (# Part '+partNum+': [title])':'')+', then '+((partNum===1||totalParts===1)?(wantIsraelite?'the welcome, backdrop, and lesson body':'the lesson body directly -- no welcome, no greeting'):'the brief bridge and lesson body')+'. ';
+var openingInstruction;
+if(partNum===1||totalParts===1){
+openingInstruction=wantRoughBez?'the rough street rebuke immediately -- no welcome, no greeting, no backdrop, no episode language':(wantIsraelite?'the welcome, backdrop, and lesson body':'the lesson body directly -- no welcome, no greeting');
+}else{
+openingInstruction=wantRoughBez?'a one-sentence bridge MAX, then the rough street sermon body -- no welcome, no recap, no episode language':'the brief bridge and lesson body';
+}
+p+='START IMMEDIATELY with your # title line'+(totalParts>1?' (# Part '+partNum+': [title])':'')+', then '+openingInstruction+'. ';
 p+='CRITICAL OUTPUT RULES:\n';
 p+='- Do NOT include any thinking, reasoning, reflection, planning, analysis, or internal monologue tags, blocks, sections, or headers in your output.\n';
 p+='- No \x3cthink>, \x3cthinking>, \x3cthought>, \x3creasoning>, \x3creflection>, \x3canalysis>, \x3cplanning>, \x3cscratchpad> tags -- NONE.\n';
@@ -3520,7 +3559,7 @@ p+='- No [Thinking] or [Internal reasoning] bracket blocks.\n';
 p+='- ABSOLUTELY NO BRACKET TAGS OF ANY KIND. No [pause], [angry], [laughs], [whispers], [scoffs], [sighs], [booming], [dramatic tone], or ANY text inside square brackets that acts as a stage direction, emotion cue, or sound effect. Square brackets are ONLY permitted for actual content like [citation] references. If you include even ONE bracket stage direction tag, the ENTIRE output is ruined. This is a written document, not a voice script.\n';
 p+='- No "Thinking..." or "Analyzing..." or "Let me consider..." preambles.\n';
 p+='- Do NOT mention word counts anywhere in the sermon. No "approximately 2,000 words" or "word count" or "I will write X words" or anything about length targets. The word count instruction is for YOUR guidance only -- it must NEVER appear in the output text.\n';
-p+='- Your VERY FIRST output must be the # title line, then '+((partNum===1||totalParts===1)?(wantIsraelite?'the welcome and backdrop, then the lesson':'the lesson directly -- no welcome'):'the brief bridge, then the lesson')+'. Nothing before the title. Zero preamble.\n';
+p+='- Your VERY FIRST output must be the # title line, then '+openingInstruction+'. Nothing before the title. Zero preamble.\n';
 return p;
 }
 /* ==========================================
