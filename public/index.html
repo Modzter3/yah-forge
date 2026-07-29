@@ -2313,6 +2313,9 @@ var h=text.match(/^#+\s+(.+)/m);
 if(h){var t=h[1].replace(/^(?:Episode|Part)\s*\d+\s*[:\-]\s*/i,'').trim();if(t.length>2)return t;}
 return (selectedPartCount===1?'Episode':'Part '+partNum);
 }
+function hasLeadingMarkdownHeading(text){
+return /^\s*#\s+\S/.test(text||'');
+}
 function generatePart(partNum){
 if(partNum>selectedPartCount){seriesComplete();return;}
 var output=document.getElementById('sermonOutput');
@@ -2363,6 +2366,7 @@ partContainer.innerHTML=marked.parse(partContent);
 var extractedTitle=extractPartTitle(partContent,partNum);
 sermonPartsTitles.push(extractedTitle);
 var ldr2=document.getElementById('loader'+partNum);if(ldr2)ldr2.remove();
+var div2=document.getElementById('partDivider'+partNum);if(div2)div2.remove();
 sermonPartsRaw.push(partContent);
 updateProgress(partNum);
 // Chain to next part
@@ -2612,7 +2616,12 @@ document.getElementById('ttsAudioWrap').innerHTML='';
 sermonPartsCombined='';
 for(var i=0;i<sermonPartsRaw.length;i++){
 var pTitle=sermonPartsTitles[i]||('Part '+(i+1));
-sermonPartsCombined+=sermonPartsRaw.length===1?'# '+pTitle+'\n\n'+sermonPartsRaw[i]+'\n\n---\n\n':'# PART '+(i+1)+' -- '+pTitle+'\n\n'+sermonPartsRaw[i]+'\n\n---\n\n';
+var rawPart=(sermonPartsRaw[i]||'').trim();
+if(hasLeadingMarkdownHeading(rawPart)){
+sermonPartsCombined+=rawPart+'\n\n---\n\n';
+}else{
+sermonPartsCombined+=sermonPartsRaw.length===1?'# '+pTitle+'\n\n'+rawPart+'\n\n---\n\n':'# Part '+(i+1)+': '+pTitle+'\n\n'+rawPart+'\n\n---\n\n';
+}
 }
 // Auto-save to library
 if(currentTopic&&sermonPartsRaw.length===selectedPartCount){
