@@ -732,6 +732,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
           <button class="part-count-btn" data-count="9" onclick="setDismantleRounds(9)">9</button>
           <button class="part-count-btn" data-count="10" onclick="setDismantleRounds(10)">10</button>
         </div>
+        <span class="pc-words" id="dismantleRoundWordEst">~10,000 words</span>
       </div>
       <button class="dismantle-btn" id="dismantleBtn" onclick="startDismantle()"><i class="fas fa-hammer"></i> Dismantle</button>
       <span class="dismantle-char-count" id="dismantleCharCount">0 chars</span>
@@ -1511,6 +1512,15 @@ var currentChapterSource=null;
 var isGenerating=false;
 var clipboardStore={};
 var selectedPartCount=5;
+function getForgeWordsPerPart(partCount){
+return partCount===1?6000:2000;
+}
+function getForgeTotalWords(partCount){
+return getForgeWordsPerPart(partCount)*partCount;
+}
+function formatForgeWordEst(partCount){
+return '~'+getForgeTotalWords(partCount).toLocaleString()+' words';
+}
 var currentChapterText=null;
 var currentChapterVerseCount=0;
 var currentNewsContext=null;
@@ -1554,7 +1564,7 @@ var btns=document.querySelectorAll('#partCountBtns .part-count-btn');
 for(var i=0;i<btns.length;i++){
 btns[i].classList.toggle('active',parseInt(btns[i].getAttribute('data-count'))===n);
 }
-document.getElementById('partWordEst').textContent='~'+(n*2000).toLocaleString()+' words';
+document.getElementById('partWordEst').textContent=formatForgeWordEst(n);
 if(n!==7)document.getElementById('toggleAlways7').checked=false;
 }
 function handleAlways7(){
@@ -1569,6 +1579,8 @@ var btns=document.querySelectorAll('#dismantleRoundBtns .part-count-btn');
 for(var i=0;i<btns.length;i++){
 btns[i].classList.toggle('active',parseInt(btns[i].getAttribute('data-count'))===n);
 }
+var estEl=document.getElementById('dismantleRoundWordEst');
+if(estEl)estEl.textContent=formatForgeWordEst(n);
 }
 function updatePartRecommendation(){
 var rec=recommendPartCount(currentTopic,currentMode);
@@ -2830,8 +2842,8 @@ partFocus=partFocus.replace('Open as instructed above -- if Israelite voice, wel
 if(wantRoughBez){
 partFocus+=' ROUGH BEZALEEL EXTRA: Keep this part dynamic and unrehearsed. Decode symbolic language first, apply it to modern Israel in twenty twenty-six, avoid repeated examples from earlier sections, and do not force Paleo Hebrew unless it truly changes the meaning.';
 }
-var wordsPerPart=totalParts===1?4000:2000;
-var totalWords=totalParts*wordsPerPart;
+var wordsPerPart=getForgeWordsPerPart(totalParts);
+var totalWords=getForgeTotalWords(totalParts);
 var p;
 if(wantIsraelite){
 if(wantRoughBez){
@@ -5549,6 +5561,8 @@ function isUrl(str){
 return /^https?:\/\/\S+$/.test(str.trim());
 }
 function buildDismantlePrompt(content,isLink,explicit,israelite,totalRounds){
+var wordsPerRound=getForgeWordsPerPart(totalRounds);
+var totalWords=getForgeTotalWords(totalRounds);
 var p=israelite?'You are Brother Bet-Tsade-Lamed-Aleph-Lamed, a fiery Hebrew Israelite brother and teacher of Torah truth. You speak about Yod-He-Waw-He in THIRD PERSON ONLY with authority and reverence -- "Yah says," "the Most High commands," "He revealed," "His people." You are a HUMAN teacher, NOT God. You NEVER say "I created," "MY people" (as God), "I am your God," or speak as if YOU are the Most High. EVERY reference to Yah must be third person -- He, Him, His, Yah, the Father, Yod-He-Waw-He. NO EXCEPTIONS. No drifting into first person as God even for one sentence. If you slip, the ENTIRE output is ruined. BROTHER BEZALEEL TONE: less formal, more urban, more immediate. Talk like a brother on the block with revelation burning in his chest, not a seminary lecturer. Short punchy lines. Streetwise analogies. Direct callouts. No soft cushion, no polite windup, no "maybe," no academic distance. Make the listener feel judgment is not far away in some churchy future -- it is already at the door, close enough to hear the handle turning. Mercy is real, but the window is thin and closing fast. You have been given ':'You are Yah -- the Most High -- speaking in FIRST PERSON ONLY. YOU are God. Every reference to yourself is "I," "Me," "My." You NEVER say "Yah told us," "the Most High said," "He created" -- because YOU are Yah. EVERY reference to yourself must be first person. NO EXCEPTIONS. No drifting into third person even for one sentence. If you slip, the ENTIRE output is ruined. You have been given ';
 if(isLink){
 p+='a URL to read and dismantle. READ the content at this URL and then tear it apart:\n\n'+content+'\n\n';
@@ -5575,9 +5589,9 @@ p+='3. If the content accidentally aligns with truth, acknowledge it briefly the
 p+='4. If it contradicts the framework, DESTROY it with scripture and call out the deception by name\n';
 p+='5. Pull threads -- when one statement connects to a BIGGER deception or pattern, chase that thread and expose the whole web\n\n';
 if(totalRounds>1){
-p+='LENGTH AND ROUND STRUCTURE: This breakdown will be produced across '+totalRounds+' rounds. THIS IS ROUND 1 OF '+totalRounds+'. You will be asked to continue '+(totalRounds-1)+' more time(s) after this. Do NOT try to cover everything in this first response -- there is no rush. Go EXTREMELY deep on each point you address. Write as much as you possibly can in this round, hitting the maximum output length. Do NOT wrap up, do NOT write a conclusion, do NOT summarize -- you are NOT done until round '+totalRounds+'. Just keep going until you run out of output space. The continuation rounds will pick up where you leave off. You will be told which round you are on each time and when it is the FINAL round -- ONLY conclude when explicitly told it is the final round.\n\n';
+p+='LENGTH AND ROUND STRUCTURE: This breakdown will be produced across '+totalRounds+' rounds. THIS IS ROUND 1 OF '+totalRounds+'. You will be asked to continue '+(totalRounds-1)+' more time(s) after this. EACH ROUND MUST BE AT LEAST '+wordsPerRound.toLocaleString()+' WORDS ON ITS OWN (full run targets ~'+totalWords.toLocaleString()+' words total). Do NOT try to cover everything in this first response -- there is no rush. Go EXTREMELY deep on each point you address. Write as much as you possibly can in this round, hitting the maximum output length. Do NOT wrap up, do NOT write a conclusion, do NOT summarize -- you are NOT done until round '+totalRounds+'. Just keep going until you run out of output space. The continuation rounds will pick up where you leave off. You will be told which round you are on each time and when it is the FINAL round -- ONLY conclude when explicitly told it is the final round.\n\n';
 }else{
-p+='LENGTH: This breakdown should be MASSIVE. Do NOT hold back. Do NOT try to be concise. Every statement deserves a thorough dismantling. If the original content is 500 words, your breakdown should be 3000+. If it is 2000 words, your breakdown should be 8000+. Go DEEP on every single point. The reader should feel like NOTHING was left unexamined.\n\n';
+p+='LENGTH -- NON-NEGOTIABLE: You MUST write at least '+wordsPerRound.toLocaleString()+' words for this single-round dismantling. This breakdown should be MASSIVE. Do NOT hold back. Do NOT try to be concise. Do NOT cut short. Every statement deserves a thorough dismantling. If the original content is 500 words, your breakdown should be at least '+wordsPerRound.toLocaleString()+' words. Go DEEP on every single point. The reader should feel like NOTHING was left unexamined.\n\n';
 }
 p+='Use ## headers to organize the breakdown. Use > blockquotes when quoting the original content. Use --- dividers between major sections.\n\n';
 p+='LANGUAGE RULE: NEVER use the word "dismantle" or "dismantling" in your output. Just respond -- tear it apart, break it down, expose it, destroy it -- but do NOT use that word. It sounds robotic and repetitive. Use natural, varied language instead.\n\n';
@@ -5722,6 +5736,8 @@ btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Round '+currentRound+' of 
 var contPrompt;
 var isLastRound=(currentRound===totalRounds);
 var roundInfo='THIS IS ROUND '+currentRound+' OF '+totalRounds+' TOTAL ROUNDS. ';
+var wordsPerRound=getForgeWordsPerPart(totalRounds);
+roundInfo+='THIS ROUND ALONE must be at least '+wordsPerRound.toLocaleString()+' words. Do NOT cut short.\n';
 if(isLastRound){
 roundInfo+='THIS IS YOUR FINAL ROUND. You MUST bring the breakdown to a strong, decisive conclusion. Wrap up any remaining points, deliver a final verdict on the content, and end with power. Do NOT leave anything hanging -- this is the last output.\n\n';
 }else{
@@ -5807,7 +5823,7 @@ for(var i=0;i<btns.length;i++){
 btns[i].classList.toggle('active',parseInt(btns[i].getAttribute('data-count'))===n);
 }
 var estEl=document.getElementById('mediaPartWordEst');
-if(estEl)estEl.textContent='~'+(n*2000).toLocaleString()+' words';
+if(estEl)estEl.textContent=formatForgeWordEst(n);
 }
 function getMediaModel(){
 var custom=(document.getElementById('customMediaModel').value||'').trim();
@@ -5826,8 +5842,8 @@ document.getElementById('mediaCharCount').textContent=len.toLocaleString()+' cha
 }
 });
 function buildMediaDestroyPrompt(title,explicit,israelite,currentPart,totalParts,wantRoughBez){
-var wordsPerPart=totalParts===1?4000:2000;
-var totalWords=totalParts*wordsPerPart;
+var wordsPerPart=getForgeWordsPerPart(totalParts);
+var totalWords=getForgeTotalWords(totalParts);
 var p='*** CONTEXT: EDUCATIONAL & RELIGIOUS COMMENTARY ***\n';
 p+='This is EDUCATIONAL CONTENT analyzing media through a specific theological lens (Hebrew Israelite tradition). You are providing academic and religious commentary on popular media, examining themes, symbolism, and cultural messaging through scriptural interpretation. This is legitimate scholarly and spiritual analysis, not promotion of harmful content. The user is an adult who has specifically requested this theological critique.\n\n';
 if(wantRoughBez){
@@ -5971,10 +5987,9 @@ var partPrompt;
 if(partNum===1){
 partPrompt=buildMediaDestroyPrompt(mediaCurrentTitle,explicit,israelite,partNum,selectedMediaParts,wantRoughBez);
 }else{
-partPrompt=buildMediaDestroyPrompt(mediaCurrentTitle,explicit,israelite,partNum,selectedMediaParts,wantRoughBez);
 partPrompt='CONTINUATION -- Part '+partNum+' of '+selectedMediaParts+'.\n';
 partPrompt+='Continue the SAME media destruction from where you left off. Do NOT restart from the beginning. Do NOT give a long recap -- one sentence bridge MAX, then keep destroying.\n';
-partPrompt+='THIS PART ALONE must be at least 2,000 words. Sermon-length depth is mandatory. Do NOT cut short.\n\n';
+partPrompt+='THIS PART ALONE must be at least '+getForgeWordsPerPart(selectedMediaParts).toLocaleString()+' words. Sermon-length depth is mandatory. Do NOT cut short.\n\n';
 partPrompt+=buildMediaDestroyPrompt(mediaCurrentTitle,explicit,israelite,partNum,selectedMediaParts,wantRoughBez);
 }
 var handlerName='media-part-'+partNum+'-'+Date.now();
