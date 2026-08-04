@@ -545,6 +545,21 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <option value="Claude-Sonnet-4.6">Claude Sonnet 4.6</option>
         <option value="Claude-Opus-4.8">Claude Opus 4.8</option>
         <option value="GPT-5.4">GPT 5.4</option>
+        <option value="Kimi-K3-EL">Kimi K3 EL</option>
+        <option value="Qwen3.8-Max-EL">Qwen 3.8 Max EL</option>
+        <option value="MiniMax-H3-EL">MiniMax H3 EL</option>
+        <option value="Inkling">Inkling</option>
+        <option value="GPT-5.4-Nano">GPT 5.4 Nano</option>
+        <option value="GPT-5.4-Mini">GPT 5.4 Mini</option>
+        <option value="Grok-4.3">Grok 4.3</option>
+        <option value="Muse-Spark-1.1">Muse Spark 1.1</option>
+        <option value="Claude-Opus-5">Claude Opus 5</option>
+        <option value="GPT-5.5-Pro">GPT 5.5 Pro</option>
+        <option value="GPT-5.6-Sol">GPT 5.6 Sol</option>
+        <option value="GPT-5.6-Terra">GPT 5.6 Terra</option>
+        <option value="Claude-Sonnet-5">Claude Sonnet 5</option>
+        <option value="GPT-5.3-Instant">GPT 5.3 Instant</option>
+        <option value="GPT-5.6-Luna">GPT 5.6 Luna</option>
         <option value="GLM-5.2">GLM 5.2</option>
         <option value="Kimi-K3">Kimi K3</option>
       </select>
@@ -585,6 +600,21 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <option value="Claude-Sonnet-4.6">Claude Sonnet 4.6 -- Web Search</option>
         <option value="Claude-Opus-4.8">Claude Opus 4.8 -- Web Search</option>
         <option value="GPT-5.4">GPT 5.4 -- Web Search</option>
+        <option value="Kimi-K3-EL">Kimi K3 EL -- Web Search</option>
+        <option value="Qwen3.8-Max-EL">Qwen 3.8 Max EL -- Web Search</option>
+        <option value="MiniMax-H3-EL">MiniMax H3 EL -- Web Search</option>
+        <option value="Inkling">Inkling -- Web Search</option>
+        <option value="GPT-5.4-Nano">GPT 5.4 Nano -- Web Search</option>
+        <option value="GPT-5.4-Mini">GPT 5.4 Mini -- Web Search</option>
+        <option value="Grok-4.3">Grok 4.3 -- Web Search</option>
+        <option value="Muse-Spark-1.1">Muse Spark 1.1 -- Web Search</option>
+        <option value="Claude-Opus-5">Claude Opus 5 -- Web Search</option>
+        <option value="GPT-5.5-Pro">GPT 5.5 Pro -- Web Search</option>
+        <option value="GPT-5.6-Sol">GPT 5.6 Sol -- Web Search</option>
+        <option value="GPT-5.6-Terra">GPT 5.6 Terra -- Web Search</option>
+        <option value="Claude-Sonnet-5">Claude Sonnet 5 -- Web Search</option>
+        <option value="GPT-5.3-Instant">GPT 5.3 Instant -- Web Search</option>
+        <option value="GPT-5.6-Luna">GPT 5.6 Luna -- Web Search</option>
         <option value="Grok-4.5">Grok 4.5 (no web search)</option>
         <option value="DeepSeek-v4-Flash">DeepSeek v4 Flash (no web search)</option>
         <option value="DeepSeek-v4-Pro">DeepSeek v4 Pro (no web search)</option>
@@ -628,6 +658,21 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <option value="Claude-Sonnet-4.6">Claude Sonnet 4.6 -- Web Search</option>
         <option value="Claude-Opus-4.8">Claude Opus 4.8 -- Web Search</option>
         <option value="GPT-5.4">GPT 5.4 -- Web Search</option>
+        <option value="Kimi-K3-EL">Kimi K3 EL -- Web Search</option>
+        <option value="Qwen3.8-Max-EL">Qwen 3.8 Max EL -- Web Search</option>
+        <option value="MiniMax-H3-EL">MiniMax H3 EL -- Web Search</option>
+        <option value="Inkling">Inkling -- Web Search</option>
+        <option value="GPT-5.4-Nano">GPT 5.4 Nano -- Web Search</option>
+        <option value="GPT-5.4-Mini">GPT 5.4 Mini -- Web Search</option>
+        <option value="Grok-4.3">Grok 4.3 -- Web Search</option>
+        <option value="Muse-Spark-1.1">Muse Spark 1.1 -- Web Search</option>
+        <option value="Claude-Opus-5">Claude Opus 5 -- Web Search</option>
+        <option value="GPT-5.5-Pro">GPT 5.5 Pro -- Web Search</option>
+        <option value="GPT-5.6-Sol">GPT 5.6 Sol -- Web Search</option>
+        <option value="GPT-5.6-Terra">GPT 5.6 Terra -- Web Search</option>
+        <option value="Claude-Sonnet-5">Claude Sonnet 5 -- Web Search</option>
+        <option value="GPT-5.3-Instant">GPT 5.3 Instant -- Web Search</option>
+        <option value="GPT-5.6-Luna">GPT 5.6 Luna -- Web Search</option>
         <option value="Grok-4.5">Grok 4.5 (no web search)</option>
         <option value="DeepSeek-v4-Flash">DeepSeek v4 Flash (no web search)</option>
         <option value="DeepSeek-v4-Pro">DeepSeek v4 Pro (no web search)</option>
@@ -670,43 +715,59 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <div style="min-width:180px;">
         <select class="model-select" id="dismantleModel" style="width:100%;" onchange="onDismantleModelDropdown()">
           <optgroup label="⚡ Budget / Fast">
-            <option value="Grok-4.1-Fast-Non-Reasoning">Grok 4.1 Fast</option>
-            <option value="Gemini-3-Flash">Gemini 3 Flash</option>
-            <option value="Gemini-3.5-Flash">Gemini 3.5 Flash</option>
-            <option value="Mimo-v2-Flash">Mimo v2 Flash</option>
-            <option value="Gemini-3.6-Flash">Gemini 3.6 Flash</option>
-            <option value="DeepSeek-v4-Flash">DeepSeek v4 Flash</option>
+        <option value="Grok-4.1-Fast-Non-Reasoning">Grok 4.1 Fast</option>
+        <option value="Gemini-3-Flash">Gemini 3 Flash</option>
+        <option value="Gemini-3.5-Flash">Gemini 3.5 Flash</option>
+        <option value="Mimo-v2-Flash">Mimo v2 Flash</option>
+        <option value="Gemini-3.6-Flash">Gemini 3.6 Flash</option>
+        <option value="DeepSeek-v4-Flash">DeepSeek v4 Flash</option>
+        <option value="GPT-5.4-Mini">GPT 5.4 Mini</option>
+        <option value="GPT-5.4-Nano">GPT 5.4 Nano</option>
+        <option value="GPT-5.3-Instant">GPT 5.3 Instant</option>
+        <option value="GPT-5.6-Luna">GPT 5.6 Luna</option>
           </optgroup>
           <optgroup label="🔥 Mid-Tier">
-            <option value="Grok-4">Grok 4</option>
-            <option value="Grok-4.5">Grok 4.5</option>
-            <option value="Claude-Sonnet-4.5">Claude Sonnet 4.5</option>
-            <option value="Claude-Sonnet-4.6">Claude Sonnet 4.6</option>
-            <option value="Gemini-3-Pro">Gemini 3 Pro</option>
-            <option value="Gemini-3.1-Pro" selected="">Gemini 3.1 Pro</option>
-            <option value="Gemini-3.5-Flash">Gemini 3.5 Flash</option>
-            <option value="Mimo-v2.5">Mimo v2.5</option>
-            <option value="Mimo-v2.5-Pro">Mimo v2.5 Pro</option>
-            <option value="GPT-5.4">GPT 5.4</option>
-            <option value="GPT-5.5">GPT 5.5</option>
+        <option value="Grok-4">Grok 4</option>
+        <option value="Grok-4.5">Grok 4.5</option>
+        <option value="Claude-Sonnet-4.5">Claude Sonnet 4.5</option>
+        <option value="Claude-Sonnet-4.6">Claude Sonnet 4.6</option>
+        <option value="Gemini-3-Pro">Gemini 3 Pro</option>
+        <option value="Gemini-3.1-Pro" selected="">Gemini 3.1 Pro</option>
+        <option value="Gemini-3.5-Flash">Gemini 3.5 Flash</option>
+        <option value="Mimo-v2.5">Mimo v2.5</option>
+        <option value="Mimo-v2.5-Pro">Mimo v2.5 Pro</option>
+        <option value="GPT-5.4">GPT 5.4</option>
+        <option value="GPT-5.5">GPT 5.5</option>
+        <option value="Muse-Spark-1.1">Muse Spark 1.1</option>
+        <option value="Grok-4.3">Grok 4.3</option>
+        <option value="GPT-5.5-Pro">GPT 5.5 Pro</option>
+        <option value="GPT-5.6-Sol">GPT 5.6 Sol</option>
+        <option value="GPT-5.6-Terra">GPT 5.6 Terra</option>
+        <option value="Claude-Sonnet-5">Claude Sonnet 5</option>
           </optgroup>
           <optgroup label="🧪 Open Source">
-            <option value="GLM-5">GLM 5</option>
-            <option value="GLM-5.1">GLM 5.1</option>
-            <option value="GLM-5.2">GLM 5.2</option>
-            <option value="DeepSeek-v3.2">DeepSeek v3.2</option>
-            <option value="DeepSeek-v4-Pro">DeepSeek v4 Pro</option>
-            <option value="Qwen3-Max">Qwen 3 Max</option>
-            <option value="Qwen3.6-Plus">Qwen 3.6 Plus</option>
-            <option value="Qwen3.7-Plus">Qwen 3.7 Plus</option>
-            <option value="Kimi-K2.5">Kimi 2.5</option>
-            <option value="Kimi-K2.6">Kimi 2.6</option>
-            <option value="Kimi-K2.7-Code">Kimi 2.7 Code</option>
-            <option value="Kimi-K3">Kimi K3</option>
-            <option value="MiniMax-M2.5">MiniMax M2.5</option>
-            <option value="MiniMax-M3">MiniMax M3</option>
+        <option value="GLM-5">GLM 5</option>
+        <option value="GLM-5.1">GLM 5.1</option>
+        <option value="GLM-5.2">GLM 5.2</option>
+        <option value="DeepSeek-v3.2">DeepSeek v3.2</option>
+        <option value="DeepSeek-v4-Pro">DeepSeek v4 Pro</option>
+        <option value="Qwen3-Max">Qwen 3 Max</option>
+        <option value="Qwen3.6-Plus">Qwen 3.6 Plus</option>
+        <option value="Qwen3.7-Plus">Qwen 3.7 Plus</option>
+        <option value="Kimi-K2.5">Kimi 2.5</option>
+        <option value="Kimi-K2.6">Kimi 2.6</option>
+        <option value="Kimi-K2.7-Code">Kimi 2.7 Code</option>
+        <option value="Kimi-K3">Kimi K3</option>
+        <option value="MiniMax-M2.5">MiniMax M2.5</option>
+        <option value="MiniMax-M3">MiniMax M3</option>
+        <option value="Hy3">Hy3</option>
+        <option value="Kimi-K3-EL">Kimi K3 EL</option>
+        <option value="Qwen3.8-Max-EL">Qwen 3.8 Max EL</option>
+        <option value="MiniMax-H3-EL">MiniMax H3 EL</option>
+        <option value="Inkling">Inkling</option>
           </optgroup>
           <optgroup label="👑 Premium">
+            <option value="Claude-Opus-5">Claude Opus 5</option>
             <option value="Claude-Opus-4.1">Claude Opus 4.1</option>
             <option value="Claude-Opus-4.6">Claude Opus 4.6</option>
             <option value="Claude-Opus-4.7">Claude Opus 4.7</option>
@@ -746,12 +807,12 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <div class="tts-bar" style="width:100%;margin-top:8px;">
           <span class="tts-label"><i class="fas fa-volume-high"></i> Voice:</span>
           <select class="tts-voice-select" id="dismantleTtsVoice">
-            <option value="Brian">Brian</option>
-            <option value="George">George</option>
-            <option value="Will">Will</option>
-            <option value="Jessica">Jessica</option>
-            <option value="Lily">Lily</option>
-            <option value="River">River</option>
+        <option value="Brian">Brian</option>
+        <option value="George">George</option>
+        <option value="Will">Will</option>
+        <option value="Jessica">Jessica</option>
+        <option value="Lily">Lily</option>
+        <option value="River">River</option>
           </select>
           <button class="sermon-action-btn tts-btn" onclick="readDismantleAloud()"><i class="fas fa-headphones"></i> Read Aloud</button>
         </div>
@@ -775,41 +836,57 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <div style="min-width:180px;">
         <select class="model-select" id="mediaModel" style="width:100%;" onchange="onMediaModelDropdown()">
           <optgroup label="⚡ Budget / Fast">
-            <option value="Grok-4.1-Fast-Non-Reasoning">Grok 4.1 Fast</option>
-            <option value="Gemini-3-Flash">Gemini 3 Flash</option>
-            <option value="Gemini-3.5-Flash">Gemini 3.5 Flash</option>
-            <option value="Mimo-v2-Flash">Mimo v2 Flash</option>
-            <option value="Gemini-3.6-Flash">Gemini 3.6 Flash</option>
-            <option value="DeepSeek-v4-Flash">DeepSeek v4 Flash</option>
+        <option value="Grok-4.1-Fast-Non-Reasoning">Grok 4.1 Fast</option>
+        <option value="Gemini-3-Flash">Gemini 3 Flash</option>
+        <option value="Gemini-3.5-Flash">Gemini 3.5 Flash</option>
+        <option value="Mimo-v2-Flash">Mimo v2 Flash</option>
+        <option value="Gemini-3.6-Flash">Gemini 3.6 Flash</option>
+        <option value="DeepSeek-v4-Flash">DeepSeek v4 Flash</option>
+        <option value="GPT-5.4-Mini">GPT 5.4 Mini</option>
+        <option value="GPT-5.4-Nano">GPT 5.4 Nano</option>
+        <option value="GPT-5.3-Instant">GPT 5.3 Instant</option>
+        <option value="GPT-5.6-Luna">GPT 5.6 Luna</option>
           </optgroup>
           <optgroup label="🔥 Recommended (works with all content)">
-            <option value="Grok-4">Grok 4</option>
-            <option value="Grok-4.5">Grok 4.5</option>
-            <option value="Gemini-3-Pro">Gemini 3 Pro</option>
-            <option value="Gemini-3.1-Pro" selected="">Gemini 3.1 Pro (Default)</option>
-            <option value="GPT-5.4">GPT-5.4</option>
-            <option value="GPT-5.4-Pro">GPT 5.4 Pro</option>
-            <option value="Mimo-v2.5">Mimo v2.5</option>
-            <option value="Mimo-v2.5-Pro">Mimo v2.5 Pro</option>
-            <option value="GPT-5.5">GPT 5.5</option>
-            <option value="Claude-Sonnet-4.6">Claude Sonnet 4.6</option>
+        <option value="Grok-4">Grok 4</option>
+        <option value="Grok-4.5">Grok 4.5</option>
+        <option value="Gemini-3-Pro">Gemini 3 Pro</option>
+        <option value="Gemini-3.1-Pro" selected="">Gemini 3.1 Pro (Default)</option>
+        <option value="GPT-5.4">GPT-5.4</option>
+        <option value="GPT-5.4-Pro">GPT 5.4 Pro</option>
+        <option value="Mimo-v2.5">Mimo v2.5</option>
+        <option value="Mimo-v2.5-Pro">Mimo v2.5 Pro</option>
+        <option value="GPT-5.5">GPT 5.5</option>
+        <option value="Muse-Spark-1.1">Muse Spark 1.1</option>
+        <option value="Grok-4.3">Grok 4.3</option>
+        <option value="GPT-5.5-Pro">GPT 5.5 Pro</option>
+        <option value="GPT-5.6-Sol">GPT 5.6 Sol</option>
+        <option value="GPT-5.6-Terra">GPT 5.6 Terra</option>
+        <option value="Claude-Sonnet-5">Claude Sonnet 5</option>
+        <option value="Claude-Sonnet-4.6">Claude Sonnet 4.6</option>
           </optgroup>
           <optgroup label="🧪 Open Source">
-            <option value="GLM-5">GLM 5</option>
-            <option value="GLM-5.1">GLM 5.1</option>
-            <option value="GLM-5.2">GLM 5.2</option>
-            <option value="DeepSeek-v3.2">DeepSeek v3.2</option>
-            <option value="DeepSeek-v4-Pro">DeepSeek v4 Pro</option>
-            <option value="Qwen3-Max">Qwen 3 Max</option>
-            <option value="Qwen3.6-Plus">Qwen 3.6 Plus</option>
-            <option value="Qwen3.7-Plus">Qwen 3.7 Plus</option>
-            <option value="Kimi-K2.5">Kimi 2.5</option>
-            <option value="Kimi-K2.6">Kimi 2.6</option>
-            <option value="Kimi-K3">Kimi K3</option>
-            <option value="MiniMax-M2.5">MiniMax M2.5</option>
-            <option value="MiniMax-M3">MiniMax M3</option>
+        <option value="GLM-5">GLM 5</option>
+        <option value="GLM-5.1">GLM 5.1</option>
+        <option value="GLM-5.2">GLM 5.2</option>
+        <option value="DeepSeek-v3.2">DeepSeek v3.2</option>
+        <option value="DeepSeek-v4-Pro">DeepSeek v4 Pro</option>
+        <option value="Qwen3-Max">Qwen 3 Max</option>
+        <option value="Qwen3.6-Plus">Qwen 3.6 Plus</option>
+        <option value="Qwen3.7-Plus">Qwen 3.7 Plus</option>
+        <option value="Kimi-K2.5">Kimi 2.5</option>
+        <option value="Kimi-K2.6">Kimi 2.6</option>
+        <option value="Kimi-K3">Kimi K3</option>
+        <option value="MiniMax-M2.5">MiniMax M2.5</option>
+        <option value="MiniMax-M3">MiniMax M3</option>
+        <option value="Hy3">Hy3</option>
+        <option value="Kimi-K3-EL">Kimi K3 EL</option>
+        <option value="Qwen3.8-Max-EL">Qwen 3.8 Max EL</option>
+        <option value="MiniMax-H3-EL">MiniMax H3 EL</option>
+        <option value="Inkling">Inkling</option>
           </optgroup>
           <optgroup label="👑 Premium">
+            <option value="Claude-Opus-5">Claude Opus 5</option>
             <option value="Claude-Opus-4.1">Claude Opus 4.1</option>
             <option value="Claude-Opus-4.6">Claude Opus 4.6</option>
             <option value="Claude-Opus-4.7">Claude Opus 4.7</option>
@@ -850,12 +927,12 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <div class="tts-bar" style="width:100%;margin-top:8px;">
           <span class="tts-label"><i class="fas fa-volume-high"></i> Voice:</span>
           <select class="tts-voice-select" id="mediaTtsVoice">
-            <option value="Brian">Brian</option>
-            <option value="George">George</option>
-            <option value="Will">Will</option>
-            <option value="Jessica">Jessica</option>
-            <option value="Lily">Lily</option>
-            <option value="River">River</option>
+        <option value="Brian">Brian</option>
+        <option value="George">George</option>
+        <option value="Will">Will</option>
+        <option value="Jessica">Jessica</option>
+        <option value="Lily">Lily</option>
+        <option value="River">River</option>
           </select>
           <button class="sermon-action-btn tts-btn" onclick="readMediaAloud()"><i class="fas fa-headphones"></i> Read Aloud</button>
         </div>
@@ -914,26 +991,35 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <div style="flex:1;min-width:180px;">
         <select class="model-select" id="newsModel" style="width:100%;" onchange="onNewsModelDropdown()">
           <optgroup label="🔍 Web Search (Real News)">
-            <option value="Gemini-3.1-Pro" selected="">Gemini 3.1 Pro</option>
-            <option value="Gemini-3.5-Flash">Gemini 3.5 Flash</option>
-            <option value="Gemini-3-Pro">Gemini 3 Pro</option>
-            <option value="GPT-5.2">GPT 5.2</option>
-            <option value="GPT-5.5">GPT 5.5</option>
-            <option value="Claude-Sonnet-4.5">Claude Sonnet 4.5</option>
-            <option value="Claude-Opus-4.1">Claude Opus 4.1</option>
-            <option value="Claude-Opus-4.7">Claude Opus 4.7</option>
-            <option value="Gemini-3-Flash">Gemini 3 Flash (Budget)</option>
-            <option value="Claude-Haiku-4.5">Claude Haiku 4.5 (Budget)</option>
-            <option value="Mimo-v2.5">Mimo v2.5</option>
-            <option value="Mimo-v2-Flash">Mimo v2 Flash (Budget)</option>
-            <option value="Gemini-3.6-Flash">Gemini 3.6 Flash (Budget)</option>
-            <option value="Claude-Sonnet-4.6">Claude Sonnet 4.6</option>
-            <option value="Claude-Opus-4.6">Claude Opus 4.6</option>
-            <option value="Claude-Opus-4.8">Claude Opus 4.8</option>
-            <option value="GPT-5.4">GPT 5.4</option>
-            <option value="Grok-4.5">Grok 4.5 (No web search)</option>
-            <option value="DeepSeek-v3.2">DeepSeek v3.2 (No web search)</option>
-            <option value="DeepSeek-v4-Flash">DeepSeek v4 Flash (No web search)</option>
+        <option value="Gemini-3.1-Pro" selected="">Gemini 3.1 Pro</option>
+        <option value="Gemini-3.5-Flash">Gemini 3.5 Flash</option>
+        <option value="Gemini-3-Pro">Gemini 3 Pro</option>
+        <option value="GPT-5.2">GPT 5.2</option>
+        <option value="GPT-5.5">GPT 5.5</option>
+        <option value="Claude-Sonnet-4.5">Claude Sonnet 4.5</option>
+        <option value="Claude-Opus-4.1">Claude Opus 4.1</option>
+        <option value="Claude-Opus-4.7">Claude Opus 4.7</option>
+        <option value="Gemini-3-Flash">Gemini 3 Flash (Budget)</option>
+        <option value="Claude-Haiku-4.5">Claude Haiku 4.5 (Budget)</option>
+        <option value="Mimo-v2.5">Mimo v2.5</option>
+        <option value="Mimo-v2-Flash">Mimo v2 Flash (Budget)</option>
+        <option value="Gemini-3.6-Flash">Gemini 3.6 Flash (Budget)</option>
+        <option value="Claude-Sonnet-4.6">Claude Sonnet 4.6</option>
+        <option value="Claude-Opus-4.6">Claude Opus 4.6</option>
+        <option value="Claude-Opus-4.8">Claude Opus 4.8</option>
+        <option value="GPT-5.4">GPT 5.4</option>
+        <option value="Grok-4.3">Grok 4.3 (No web search)</option>
+        <option value="Muse-Spark-1.1">Muse Spark 1.1</option>
+        <option value="GPT-5.3-Instant">GPT 5.3 Instant (Budget)</option>
+        <option value="GPT-5.5-Pro">GPT 5.5 Pro</option>
+        <option value="GPT-5.6-Luna">GPT 5.6 Luna (Budget)</option>
+        <option value="GPT-5.6-Terra">GPT 5.6 Terra</option>
+        <option value="GPT-5.6-Sol">GPT 5.6 Sol</option>
+        <option value="Claude-Sonnet-5">Claude Sonnet 5</option>
+        <option value="Claude-Opus-5">Claude Opus 5</option>
+        <option value="Grok-4.5">Grok 4.5 (No web search)</option>
+        <option value="DeepSeek-v3.2">DeepSeek v3.2 (No web search)</option>
+        <option value="DeepSeek-v4-Flash">DeepSeek v4 Flash (No web search)</option>
           </optgroup>
         </select>
         <div class="custom-model-row">
@@ -953,22 +1039,22 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <div>
           <label style="display:block;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:4px;"><i class="fas fa-bolt" style="margin-right:3px;"></i>Quick</label>
           <select id="newsDatePreset" class="fetch-model-select" style="font-size:14px;padding:6px 10px;" onchange="onNewsDatePreset()">
-            <option value="">Custom</option>
-            <option value="today">Today</option>
-            <option value="3d">Last 3 Days</option>
-            <option value="week" selected="">This Week</option>
-            <option value="2w">Last 2 Weeks</option>
+        <option value="">Custom</option>
+        <option value="today">Today</option>
+        <option value="3d">Last 3 Days</option>
+        <option value="week" selected="">This Week</option>
+        <option value="2w">Last 2 Weeks</option>
           </select>
         </div>
         <div>
           <label style="display:block;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:4px;"><i class="fas fa-list-ol" style="margin-right:3px;"></i>Results</label>
           <select id="newsResultCount" class="fetch-model-select" style="font-size:14px;padding:6px 10px;">
-            <option value="5">5 articles</option>
-            <option value="8">8 articles</option>
-            <option value="10" selected="">10 articles</option>
-            <option value="15">15 articles</option>
-            <option value="20">20 articles</option>
-            <option value="25">25 articles</option>
+        <option value="5">5 articles</option>
+        <option value="8">8 articles</option>
+        <option value="10" selected="">10 articles</option>
+        <option value="15">15 articles</option>
+        <option value="20">20 articles</option>
+        <option value="25">25 articles</option>
           </select>
         </div>
       </div>
@@ -1054,48 +1140,64 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <label><i class="fas fa-robot"></i> Model:</label>
         <select class="model-select" id="modelSelect" onchange="onSermonModelDropdown()">
           <optgroup label="⚡ Budget / Fast">
-            <option value="Grok-4.1-Fast-Non-Reasoning">Grok 4.1 Fast -- Free &amp; Raw</option>
-            <option value="Grok-4.1-Fast-Reasoning">Grok 4.1 Fast Reasoning</option>
-            <option value="Gemini-3-Flash">Gemini 3 Flash -- Fast &amp; Brutal</option>
-            <option value="Gemini-3.5-Flash">Gemini 3.5 Flash</option>
-            <option value="Claude-Haiku-4.5">Claude Haiku 4.5 -- Budget</option>
-            <option value="Grok-Code-Fast-1">Grok Code Fast -- Budget</option>
-            <option value="Mimo-v2-Flash">Mimo v2 Flash -- Fast</option>
-            <option value="Gemini-3.6-Flash">Gemini 3.6 Flash -- Latest Fast</option>
-            <option value="Gemini-3.5-Flash-Lite">Gemini 3.5 Flash Lite -- Budget</option>
-            <option value="DeepSeek-v4-Flash">DeepSeek v4 Flash -- Newest Fast</option>
-            <option value="Mimo-v2.5-Pro">Mimo v2.5 Pro</option>
+        <option value="Grok-4.1-Fast-Non-Reasoning">Grok 4.1 Fast -- Free &amp; Raw</option>
+        <option value="Grok-4.1-Fast-Reasoning">Grok 4.1 Fast Reasoning</option>
+        <option value="Gemini-3-Flash">Gemini 3 Flash -- Fast &amp; Brutal</option>
+        <option value="Gemini-3.5-Flash">Gemini 3.5 Flash</option>
+        <option value="Claude-Haiku-4.5">Claude Haiku 4.5 -- Budget</option>
+        <option value="Grok-Code-Fast-1">Grok Code Fast -- Budget</option>
+        <option value="Mimo-v2-Flash">Mimo v2 Flash -- Fast</option>
+        <option value="Gemini-3.6-Flash">Gemini 3.6 Flash -- Latest Fast</option>
+        <option value="Gemini-3.5-Flash-Lite">Gemini 3.5 Flash Lite -- Budget</option>
+        <option value="GPT-5.4-Mini">GPT 5.4 Mini -- Budget</option>
+        <option value="GPT-5.4-Nano">GPT 5.4 Nano -- Budget</option>
+        <option value="GPT-5.3-Instant">GPT 5.3 Instant -- Budget</option>
+        <option value="GPT-5.6-Luna">GPT 5.6 Luna -- Budget</option>
+        <option value="DeepSeek-v4-Flash">DeepSeek v4 Flash -- Newest Fast</option>
+        <option value="Mimo-v2.5-Pro">Mimo v2.5 Pro</option>
           </optgroup>
           <optgroup label="🔥 Mid-Tier">
-            <option value="Grok-4">Grok 4 -- Unfiltered King</option>
-            <option value="Grok-4.5">Grok 4.5 -- Latest Unfiltered</option>
-            <option value="Claude-Sonnet-4.5">Claude Sonnet 4.5 -- Smart</option>
-            <option value="Claude-Sonnet-4.6">Claude Sonnet 4.6 -- Smart</option>
-            <option value="Gemini-3-Pro">Gemini 3 Pro -- Deep Context</option>
-            <option value="Gemini-3.1-Pro" selected="">Gemini 3.1 Pro -- 2x Reasoning</option>
-            <option value="Gemini-3.5-Flash">Gemini 3.5 Flash</option>
-            <option value="Mimo-v2.5">Mimo v2.5 -- Advanced</option>
-            <option value="GPT-5.4">GPT 5.4 -- Frontier</option>
-            <option value="GPT-5.4-Pro">GPT 5.4 Pro</option>
-            <option value="GPT-5.5">GPT 5.5 -- Frontier</option>
+        <option value="Grok-4">Grok 4 -- Unfiltered King</option>
+        <option value="Grok-4.5">Grok 4.5 -- Latest Unfiltered</option>
+        <option value="Claude-Sonnet-4.5">Claude Sonnet 4.5 -- Smart</option>
+        <option value="Claude-Sonnet-4.6">Claude Sonnet 4.6 -- Smart</option>
+        <option value="Gemini-3-Pro">Gemini 3 Pro -- Deep Context</option>
+        <option value="Gemini-3.1-Pro" selected="">Gemini 3.1 Pro -- 2x Reasoning</option>
+        <option value="Gemini-3.5-Flash">Gemini 3.5 Flash</option>
+        <option value="Mimo-v2.5">Mimo v2.5 -- Advanced</option>
+        <option value="GPT-5.4">GPT 5.4 -- Frontier</option>
+        <option value="GPT-5.4-Pro">GPT 5.4 Pro</option>
+        <option value="GPT-5.5">GPT 5.5 -- Frontier</option>
+        <option value="Muse-Spark-1.1">Muse Spark 1.1 -- Frontier</option>
+        <option value="Grok-4.3">Grok 4.3 -- Frontier</option>
+        <option value="GPT-5.5-Pro">GPT 5.5 Pro -- Frontier</option>
+        <option value="GPT-5.6-Sol">GPT 5.6 Sol -- Frontier</option>
+        <option value="GPT-5.6-Terra">GPT 5.6 Terra -- Frontier</option>
+        <option value="Claude-Sonnet-5">Claude Sonnet 5 -- Frontier</option>
           </optgroup>
           <optgroup label="🧪 Open Source / Test">
-            <option value="GLM-5">GLM 5 -- Opus-Class Open Source</option>
-            <option value="GLM-5.1">GLM 5.1</option>
-            <option value="GLM-5.2">GLM 5.2</option>
-            <option value="DeepSeek-v3.2">DeepSeek v3.2 -- Advanced Reasoning</option>
-            <option value="DeepSeek-v4-Pro">DeepSeek v4 Pro -- Flagship</option>
-            <option value="Qwen3-Max">Qwen 3 Max -- Multilingual Beast</option>
-            <option value="Qwen3.6-Plus">Qwen 3.6 Plus</option>
-            <option value="Qwen3.7-Plus">Qwen 3.7 Plus</option>
-            <option value="Kimi-K2.5">Kimi 2.5 -- Moonshot Flagship</option>
-            <option value="Kimi-K2.6">Kimi 2.6</option>
-            <option value="Kimi-K2.7-Code">Kimi 2.7 Code</option>
-            <option value="Kimi-K3">Kimi K3</option>
-            <option value="MiniMax-M2.5">MiniMax M2.5</option>
-            <option value="MiniMax-M3">MiniMax M3</option>
+        <option value="GLM-5">GLM 5 -- Opus-Class Open Source</option>
+        <option value="GLM-5.1">GLM 5.1</option>
+        <option value="GLM-5.2">GLM 5.2</option>
+        <option value="DeepSeek-v3.2">DeepSeek v3.2 -- Advanced Reasoning</option>
+        <option value="DeepSeek-v4-Pro">DeepSeek v4 Pro -- Flagship</option>
+        <option value="Qwen3-Max">Qwen 3 Max -- Multilingual Beast</option>
+        <option value="Qwen3.6-Plus">Qwen 3.6 Plus</option>
+        <option value="Qwen3.7-Plus">Qwen 3.7 Plus</option>
+        <option value="Kimi-K2.5">Kimi 2.5 -- Moonshot Flagship</option>
+        <option value="Kimi-K2.6">Kimi 2.6</option>
+        <option value="Kimi-K2.7-Code">Kimi 2.7 Code</option>
+        <option value="Kimi-K3">Kimi K3</option>
+        <option value="MiniMax-M2.5">MiniMax M2.5</option>
+        <option value="MiniMax-M3">MiniMax M3</option>
+        <option value="Hy3">Hy3</option>
+        <option value="Kimi-K3-EL">Kimi K3 EL</option>
+        <option value="Qwen3.8-Max-EL">Qwen 3.8 Max EL</option>
+        <option value="MiniMax-H3-EL">MiniMax H3 EL</option>
+        <option value="Inkling">Inkling</option>
           </optgroup>
           <optgroup label="👑 Premium">
+            <option value="Claude-Opus-5">Claude Opus 5 -- Newest Flagship</option>
             <option value="Claude-Opus-4.1">Claude Opus 4.1 -- Premium Power</option>
             <option value="Claude-Opus-4.6">Claude Opus 4.6 -- Maximum Power</option>
             <option value="Claude-Opus-4.7">Claude Opus 4.7 -- Ultimate Power</option>
@@ -1205,8 +1307,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <div class="model-select-wrap" style="margin-top:6px;">
           <label><i class="fas fa-music"></i> Music Bot:</label>
           <select class="model-select" id="musicBotSelect">
-            <option value="ElevenLabs-Music-v2">ElevenLabs Music v2 (New)</option>
-            <option value="ElevenLabs-Music">ElevenLabs Music</option>
+        <option value="ElevenLabs-Music-v2">ElevenLabs Music v2 (New)</option>
+        <option value="ElevenLabs-Music">ElevenLabs Music</option>
           </select>
         </div>
         <div class="media-btn-row">
@@ -1232,37 +1334,46 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <div class="model-select-wrap" style="margin-top:6px;">
           <label><i class="fas fa-robot"></i> Prompt Model:</label>
           <select class="model-select" id="imagePromptModel">
-            <option value="Gemini-3-Flash">Gemini 3 Flash</option>
-            <option value="Gemini-3.6-Flash">Gemini 3.6 Flash</option>
-            <option value="Gemini-3.5-Flash">Gemini 3.5 Flash</option>
-            <option value="Gemini-3-Pro">Gemini 3 Pro</option>
-            <option value="Claude-Sonnet-4.5">Claude Sonnet 4.5</option>
-            <option value="Claude-Sonnet-4.6">Claude Sonnet 4.6</option>
-            <option value="Claude-Opus-4.1">Claude Opus 4.1</option>
-            <option value="Claude-Opus-4.6">Claude Opus 4.6</option>
-            <option value="Claude-Opus-4.7">Claude Opus 4.7</option>
-            <option value="Claude-Opus-4.8">Claude Opus 4.8</option>
-            <option value="GPT-5.2">GPT 5.2</option>
-            <option value="GPT-5.4">GPT 5.4</option>
-            <option value="GPT-5.5">GPT 5.5</option>
-            <option value="Grok-4.1-Fast-Non-Reasoning">Grok 4.1 Fast</option>
-            <option value="Grok-4.5">Grok 4.5</option>
-            <option value="DeepSeek-v3.2">DeepSeek v3.2</option>
-            <option value="DeepSeek-v4-Flash">DeepSeek v4 Flash</option>
-            <option value="Mimo-v2.5">Mimo v2.5</option>
-            <option value="Mimo-v2.5-Pro">Mimo v2.5 Pro</option>
-            <option value="Mimo-v2-Flash">Mimo v2 Flash</option>
-            <option value="Kimi-K3">Kimi K3</option>
+        <option value="Gemini-3-Flash">Gemini 3 Flash</option>
+        <option value="Gemini-3.6-Flash">Gemini 3.6 Flash</option>
+        <option value="Gemini-3.5-Flash">Gemini 3.5 Flash</option>
+        <option value="Gemini-3-Pro">Gemini 3 Pro</option>
+        <option value="Claude-Sonnet-4.5">Claude Sonnet 4.5</option>
+        <option value="Claude-Sonnet-4.6">Claude Sonnet 4.6</option>
+        <option value="Claude-Opus-4.1">Claude Opus 4.1</option>
+        <option value="Claude-Opus-4.6">Claude Opus 4.6</option>
+        <option value="Claude-Opus-4.7">Claude Opus 4.7</option>
+        <option value="Claude-Opus-4.8">Claude Opus 4.8</option>
+        <option value="GPT-5.2">GPT 5.2</option>
+        <option value="GPT-5.4">GPT 5.4</option>
+        <option value="GPT-5.5">GPT 5.5</option>
+        <option value="Inkling">Inkling</option>
+        <option value="Grok-4.3">Grok 4.3</option>
+        <option value="Muse-Spark-1.1">Muse Spark 1.1</option>
+        <option value="GPT-5.5-Pro">GPT 5.5 Pro</option>
+        <option value="GPT-5.6-Luna">GPT 5.6 Luna</option>
+        <option value="GPT-5.6-Terra">GPT 5.6 Terra</option>
+        <option value="GPT-5.6-Sol">GPT 5.6 Sol</option>
+        <option value="Claude-Opus-5">Claude Opus 5</option>
+        <option value="Claude-Sonnet-5">Claude Sonnet 5</option>
+        <option value="Grok-4.1-Fast-Non-Reasoning">Grok 4.1 Fast</option>
+        <option value="Grok-4.5">Grok 4.5</option>
+        <option value="DeepSeek-v3.2">DeepSeek v3.2</option>
+        <option value="DeepSeek-v4-Flash">DeepSeek v4 Flash</option>
+        <option value="Mimo-v2.5">Mimo v2.5</option>
+        <option value="Mimo-v2.5-Pro">Mimo v2.5 Pro</option>
+        <option value="Mimo-v2-Flash">Mimo v2 Flash</option>
+        <option value="Kimi-K3">Kimi K3</option>
           </select>
           <input type="text" class="custom-model-input" id="customImagePromptModel" placeholder="or type a bot handle...">
         </div>
         <div class="model-select-wrap" style="margin-top:6px;">
           <label><i class="fas fa-palette"></i> Image Bot:</label>
           <select class="model-select" id="imageBotSelect">
-            <option value="Nano-Banana-2">Nano Banana 2</option>
-            <option value="Nano-Banana-2-Lite">Nano Banana 2 Lite (New)</option>
-            <option value="Nano-Banana-Pro">Nano Banana Pro</option>
-            <option value="GPT-Image-2">GPT Image 2</option>
+        <option value="Nano-Banana-2">Nano Banana 2</option>
+        <option value="Nano-Banana-2-Lite">Nano Banana 2 Lite (New)</option>
+        <option value="Nano-Banana-Pro">Nano Banana Pro</option>
+        <option value="GPT-Image-2">GPT Image 2</option>
           </select>
         </div>
         <div class="media-btn-row">
@@ -1282,10 +1393,10 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <div class="model-select-wrap" style="margin-bottom:8px;">
           <label><i class="fas fa-film"></i> Video Bot:</label>
           <select class="model-select" id="videoBotSelect">
-            <option value="Sora-2">Sora 2</option>
-            <option value="Sora-2-Pro">Sora 2 Pro</option>
-            <option value="Seedance-2.0">Seedance 2.0 (New)</option>
-            <option value="Veo-3.1-Lite">Veo 3.1 Lite</option>
+        <option value="Sora-2">Sora 2</option>
+        <option value="Sora-2-Pro">Sora 2 Pro</option>
+        <option value="Seedance-2.0">Seedance 2.0 (New)</option>
+        <option value="Veo-3.1-Lite">Veo 3.1 Lite</option>
           </select>
         </div>
         <div class="media-btn-row">
@@ -1836,7 +1947,7 @@ params.reasoning_effort='none';
 }
 // Enable web_search for apocrypha and sealed texts on supported models
 if(type==='apocrypha'||type==='sealed'){
-var webModels=['Gemini-3-Flash','Gemini-3.6-Flash','Gemini-3.5-Flash','Gemini-3-Pro','GPT-5.2','GPT-5.4','Claude-Sonnet-4.5','Claude-Sonnet-4.6','Claude-Haiku-4.5'];
+var webModels=['Gemini-3-Flash','Gemini-3.6-Flash','Gemini-3.5-Flash','Gemini-3-Pro','GPT-5.2','GPT-5.4','Claude-Sonnet-4.5','Claude-Sonnet-4.6','Claude-Haiku-4.5','Claude-Sonnet-5','GPT-5.6-Sol','GPT-5.6-Terra','GPT-5.6-Luna','GPT-5.5-Pro','GPT-5.3-Instant','Muse-Spark-1.1','Gemini-3.5-Flash-Lite'];
 if(webModels.indexOf(model)!==-1){
 params.web_search=true;
 // GPT-5.2 cannot use reasoning_effort=none with web_search
@@ -2159,7 +2270,7 @@ function updateNewsSearchNote(){
 var model=getNewsModel();
 var noteEl=document.getElementById('newsSearchNote');
 if(!noteEl)return;
-var webSearchModels=['Gemini-3.1-Pro','Gemini-3-Pro','Gemini-3-Flash','Gemini-3.6-Flash','Gemini-3.5-Flash','Claude-Sonnet-4.5','Claude-Sonnet-4.6','Claude-Haiku-4.5','GPT-5.2','GPT-5.4','GPT-5.5','Claude-Opus-4.6','Claude-Opus-4.1','Claude-Opus-4.7','Claude-Opus-4.8','Grok-4.5'];
+var webSearchModels=['Gemini-3.1-Pro','Gemini-3-Pro','Gemini-3-Flash','Gemini-3.6-Flash','Gemini-3.5-Flash','Claude-Sonnet-4.5','Claude-Sonnet-4.6','Claude-Haiku-4.5','GPT-5.2','GPT-5.4','GPT-5.5','Claude-Opus-4.6','Claude-Opus-4.1','Claude-Opus-4.7','Claude-Opus-4.8','Grok-4.5','Claude-Sonnet-5','Claude-Opus-5','GPT-5.6-Sol','GPT-5.6-Terra','GPT-5.6-Luna','GPT-5.5-Pro','GPT-5.3-Instant','Muse-Spark-1.1','Gemini-3.5-Flash-Lite','GPT-5.4-Mini','GPT-5.4-Nano'];
 var isKnownWebSearch=webSearchModels.indexOf(model)!==-1;
 var isCustom=(document.getElementById('customNewsModel').value||'').trim().length>0;
 if(isKnownWebSearch){
