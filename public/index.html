@@ -558,7 +558,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <option value="GPT-5.6-Sol">GPT 5.6 Sol</option>
         <option value="GPT-5.6-Terra">GPT 5.6 Terra</option>
         <option value="Claude-Sonnet-5">Claude Sonnet 5</option>
-        <option value="GPT-5.3-Instant">GPT 5.3 Instant</option>
+        <option value="GPT-5.2-Instant">GPT 5.2 Instant</option>
         <option value="GPT-5.6-Luna">GPT 5.6 Luna</option>
         <option value="GLM-5.2">GLM 5.2</option>
         <option value="Kimi-K3">Kimi K3</option>
@@ -613,7 +613,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <option value="GPT-5.6-Sol">GPT 5.6 Sol -- Web Search</option>
         <option value="GPT-5.6-Terra">GPT 5.6 Terra -- Web Search</option>
         <option value="Claude-Sonnet-5">Claude Sonnet 5 -- Web Search</option>
-        <option value="GPT-5.3-Instant">GPT 5.3 Instant -- Web Search</option>
+        <option value="GPT-5.2-Instant">GPT 5.2 Instant -- Web Search</option>
         <option value="GPT-5.6-Luna">GPT 5.6 Luna -- Web Search</option>
         <option value="Grok-4.5">Grok 4.5 (no web search)</option>
         <option value="DeepSeek-v4-Flash">DeepSeek v4 Flash (no web search)</option>
@@ -671,7 +671,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <option value="GPT-5.6-Sol">GPT 5.6 Sol -- Web Search</option>
         <option value="GPT-5.6-Terra">GPT 5.6 Terra -- Web Search</option>
         <option value="Claude-Sonnet-5">Claude Sonnet 5 -- Web Search</option>
-        <option value="GPT-5.3-Instant">GPT 5.3 Instant -- Web Search</option>
+        <option value="GPT-5.2-Instant">GPT 5.2 Instant -- Web Search</option>
         <option value="GPT-5.6-Luna">GPT 5.6 Luna -- Web Search</option>
         <option value="Grok-4.5">Grok 4.5 (no web search)</option>
         <option value="DeepSeek-v4-Flash">DeepSeek v4 Flash (no web search)</option>
@@ -723,7 +723,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <option value="DeepSeek-v4-Flash">DeepSeek v4 Flash</option>
         <option value="GPT-5.4-Mini">GPT 5.4 Mini</option>
         <option value="GPT-5.4-Nano">GPT 5.4 Nano</option>
-        <option value="GPT-5.3-Instant">GPT 5.3 Instant</option>
+        <option value="GPT-5.2-Instant">GPT 5.2 Instant</option>
         <option value="GPT-5.6-Luna">GPT 5.6 Luna</option>
           </optgroup>
           <optgroup label="🔥 Mid-Tier">
@@ -844,7 +844,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <option value="DeepSeek-v4-Flash">DeepSeek v4 Flash</option>
         <option value="GPT-5.4-Mini">GPT 5.4 Mini</option>
         <option value="GPT-5.4-Nano">GPT 5.4 Nano</option>
-        <option value="GPT-5.3-Instant">GPT 5.3 Instant</option>
+        <option value="GPT-5.2-Instant">GPT 5.2 Instant</option>
         <option value="GPT-5.6-Luna">GPT 5.6 Luna</option>
           </optgroup>
           <optgroup label="🔥 Recommended (works with all content)">
@@ -1010,7 +1010,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <option value="GPT-5.4">GPT 5.4</option>
         <option value="Grok-4.3">Grok 4.3 (No web search)</option>
         <option value="Muse-Spark-1.1">Muse Spark 1.1</option>
-        <option value="GPT-5.3-Instant">GPT 5.3 Instant (Budget)</option>
+        <option value="GPT-5.2-Instant">GPT 5.2 Instant (Budget)</option>
         <option value="GPT-5.5-Pro">GPT 5.5 Pro</option>
         <option value="GPT-5.6-Luna">GPT 5.6 Luna (Budget)</option>
         <option value="GPT-5.6-Terra">GPT 5.6 Terra</option>
@@ -1151,7 +1151,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <option value="Gemini-3.5-Flash-Lite">Gemini 3.5 Flash Lite -- Budget</option>
         <option value="GPT-5.4-Mini">GPT 5.4 Mini -- Budget</option>
         <option value="GPT-5.4-Nano">GPT 5.4 Nano -- Budget</option>
-        <option value="GPT-5.3-Instant">GPT 5.3 Instant -- Budget</option>
+        <option value="GPT-5.2-Instant">GPT 5.2 Instant -- Budget</option>
         <option value="GPT-5.6-Luna">GPT 5.6 Luna -- Budget</option>
         <option value="DeepSeek-v4-Flash">DeepSeek v4 Flash -- Newest Fast</option>
         <option value="Mimo-v2.5-Pro">Mimo v2.5 Pro</option>
@@ -1947,8 +1947,8 @@ params.reasoning_effort='none';
 }
 // Enable web_search for apocrypha and sealed texts on supported models
 if(type==='apocrypha'||type==='sealed'){
-var webModels=['Gemini-3-Flash','Gemini-3.6-Flash','Gemini-3.5-Flash','Gemini-3-Pro','GPT-5.2','GPT-5.4','Claude-Sonnet-4.5','Claude-Sonnet-4.6','Claude-Haiku-4.5','Claude-Sonnet-5','GPT-5.6-Sol','GPT-5.6-Terra','GPT-5.6-Luna','GPT-5.5-Pro','GPT-5.3-Instant','Muse-Spark-1.1','Gemini-3.5-Flash-Lite'];
-if(webModels.indexOf(model)!==-1){
+var webModels=['Gemini-3-Flash','Gemini-3.6-Flash','Gemini-3.5-Flash','Gemini-3-Pro','GPT-5.2','GPT-5.4','Claude-Sonnet-4.5','Claude-Sonnet-4.6','Claude-Haiku-4.5','Claude-Sonnet-5','GPT-5.6-Sol','GPT-5.6-Terra','GPT-5.6-Luna','GPT-5.5-Pro','GPT-5.2-Instant','Muse-Spark-1.1','Gemini-3.5-Flash-Lite'];
+if(webModels.indexOf(normalizePoeBotId(model))!==-1){
 params.web_search=true;
 // GPT-5.2 cannot use reasoning_effort=none with web_search
 if(model==='GPT-5.2')params.reasoning_effort='low';
@@ -2205,6 +2205,12 @@ return sections;
 /* ==========================================
 MODEL SELECTOR HELPER
 ========================================== */
+function normalizePoeBotId(bot){
+if(!bot)return bot;
+var lower=String(bot).trim().toLowerCase();
+if(lower==='muse-spark-1.1')return 'muse-spark-1-1';
+return lower;
+}
 function getSelectedModel(){
 var custom=(document.getElementById('customModelInput').value||'').trim();
 if(custom)return custom;
@@ -2270,8 +2276,8 @@ function updateNewsSearchNote(){
 var model=getNewsModel();
 var noteEl=document.getElementById('newsSearchNote');
 if(!noteEl)return;
-var webSearchModels=['Gemini-3.1-Pro','Gemini-3-Pro','Gemini-3-Flash','Gemini-3.6-Flash','Gemini-3.5-Flash','Claude-Sonnet-4.5','Claude-Sonnet-4.6','Claude-Haiku-4.5','GPT-5.2','GPT-5.4','GPT-5.5','Claude-Opus-4.6','Claude-Opus-4.1','Claude-Opus-4.7','Claude-Opus-4.8','Grok-4.5','Claude-Sonnet-5','Claude-Opus-5','GPT-5.6-Sol','GPT-5.6-Terra','GPT-5.6-Luna','GPT-5.5-Pro','GPT-5.3-Instant','Muse-Spark-1.1','Gemini-3.5-Flash-Lite','GPT-5.4-Mini','GPT-5.4-Nano'];
-var isKnownWebSearch=webSearchModels.indexOf(model)!==-1;
+var webSearchModels=['Gemini-3.1-Pro','Gemini-3-Pro','Gemini-3-Flash','Gemini-3.6-Flash','Gemini-3.5-Flash','Claude-Sonnet-4.5','Claude-Sonnet-4.6','Claude-Haiku-4.5','GPT-5.2','GPT-5.4','GPT-5.5','Claude-Opus-4.6','Claude-Opus-4.1','Claude-Opus-4.7','Claude-Opus-4.8','Grok-4.5','Claude-Sonnet-5','Claude-Opus-5','GPT-5.6-Sol','GPT-5.6-Terra','GPT-5.6-Luna','GPT-5.5-Pro','GPT-5.2-Instant','Muse-Spark-1.1','Gemini-3.5-Flash-Lite','GPT-5.4-Mini','GPT-5.4-Nano'];
+var isKnownWebSearch=webSearchModels.some(function(m){return normalizePoeBotId(m)===normalizePoeBotId(model);});
 var isCustom=(document.getElementById('customNewsModel').value||'').trim().length>0;
 if(isKnownWebSearch){
 noteEl.innerHTML='<i class="fas fa-check-circle" style="color:#38bdb0;margin-right:4px;"></i>Web search enabled -- real articles only';
