@@ -6089,6 +6089,14 @@ var el=document.getElementById('mediaEpisodeMode');
 if(!input||!el)return;
 if(looksLikeTvSeason(input.value.trim()))el.checked=true;
 }
+function buildEpisodeAssignmentExamples(currentPart,totalParts,episodeCount){
+var lines='';
+for(var i=1;i<=totalParts;i++){
+var r=getVerseRangeForPart(i,totalParts,episodeCount);
+lines+='  Part '+i+': Episodes '+r.start+'-'+r.end+' ('+r.count+' episode'+(r.count!==1?'s':'')+')'+(i===currentPart?'  <<<< YOUR PART':'')+'\n';
+}
+return lines.trim();
+}
 function buildEpisodeModeBlock(title,currentPart,totalParts,wantRoughBez,mode){
 var isSermon=(mode==='sermon');
 var followUp=isSermon?'scriptural teaching and prophetic exposure':'theological destruction';
@@ -6106,17 +6114,22 @@ p+='- Inside each episode: WHAT HAPPENED (scene-level plot) THEN '+followUp+' of
 p+='- FORBIDDEN: One big "season overview." FORBIDDEN: "Throughout the season..." without naming the episode. FORBIDDEN: Skipping episodes. FORBIDDEN: Melting multiple episodes into one vague paragraph.\n';
 p+='- REQUIRED: Name characters, scenes, quotes, twists, and endings for THAT episode before you '+followVerb+' it.\n\n';
 if(totalParts>1){
+var ex10=buildEpisodeAssignmentExamples(currentPart,totalParts,10);
+var ex12=buildEpisodeAssignmentExamples(currentPart,totalParts,12);
 p+='STEP 3 -- MULTI-PART EPISODE ASSIGNMENT:\n';
 p+='This is PART '+currentPart+' of '+totalParts+'. After web search reveals total episode count E:\n';
-p+='- Divide all E episodes EVENLY across '+totalParts+' parts.\n';
+p+='- Divide all E episodes EVENLY across '+totalParts+' parts (same math as splitting Bible verses across parts).\n';
+p+='- EXAMPLE if E=10 and '+totalParts+' parts:\n'+ex10+'\n';
+p+='- EXAMPLE if E=12 and '+totalParts+' parts:\n'+ex12+'\n';
+p+='- YOUR JOB: apply this same even-split to the real episode count E you find. Cover ONLY your assigned episodes this part.\n';
 if(currentPart===1){
-p+='- Part 1 covers ONLY the FIRST chunk of episodes. If E=12 across '+totalParts+' parts, you might get episodes 1-2 or 1-3 -- do NOT jump to later episodes.\n';
+p+='- Part 1 covers ONLY the FIRST chunk -- do NOT jump to later episodes.\n';
 }else if(currentPart===totalParts){
 p+='- FINAL PART: cover the LAST chunk through the season finale. '+followVerb.charAt(0).toUpperCase()+followVerb.slice(1)+' the finale on its own terms, then deliver a strong closing '+((isSermon)?'verdict and warning':'season verdict')+'.\n';
 }else{
 p+='- Middle part: cover ONLY your assigned middle chunk. One sentence bridge MAX, then start on the next episode immediately.\n';
 }
-p+='- Open with a line stating which episodes you are covering (e.g. "Episodes 4 through 6"), then '+followVerb+' EACH in order.\n';
+p+='- Open with a line stating which episodes you are covering (e.g. "Episodes 4 through 6"), then '+followVerb+' EACH in order with its own ## Episode N header.\n';
 p+='- Do NOT touch episodes assigned to other parts. Do NOT recap prior episodes beyond one sentence.\n\n';
 }else{
 p+='STEP 3 -- SINGLE PART:\n';
