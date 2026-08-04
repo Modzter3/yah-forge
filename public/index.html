@@ -2406,6 +2406,8 @@ return label;
 });
 // Bare citation numbers [1] [12]
 text=text.replace(/\[\d+\]/g,'');
+// Empty citation brackets left after stripping
+text=text.replace(/\[\s*\]/g,'');
 // Parenthetical URLs
 text=text.replace(/\(https?:\/\/[^\)]+\)/g,'');
 // Standalone URL lines anywhere in the body
@@ -5976,6 +5978,9 @@ var selectedMediaParts=5;
 var mediaRawResult='';
 var mediaCurrentTitle='';
 var mediaContinueCount=0;
+var mediaAutoContinueCount=0;
+var MEDIA_MAX_AUTO_CONTINUES=6;
+var mediaLooksIncomplete=dismantleLooksIncomplete;
 function setMediaParts(n){
 selectedMediaParts=n;
 var btns=document.querySelectorAll('#mediaPartBtns .part-count-btn');
@@ -6116,7 +6121,6 @@ var model=getMediaModel();
 var wantRoughBez=document.getElementById('mediaRoughBez').checked;
 var explicit=document.getElementById('mediaExplicit').checked||wantRoughBez;
 var israelite=document.getElementById('mediaIsraelite').checked||wantRoughBez;
-var maxContinues=Math.max(0,selectedMediaParts-1);
 var prompt=buildMediaDestroyPrompt(input,explicit,israelite,1,selectedMediaParts,wantRoughBez);
 var btn=document.getElementById('mediaBtn');
 var output=document.getElementById('mediaOutput');
@@ -6141,6 +6145,9 @@ if(partNum>selectedMediaParts){
 actions.style.display='flex';
 btn.disabled=false;
 btn.innerHTML='<i class="fas fa-film"></i> Destroy Media';
+if(mediaContinueCount>0||mediaAutoContinueCount>0){
+showToast('Media destruction complete.');
+}
 return;
 }
 var partPrompt;
@@ -6152,7 +6159,6 @@ partPrompt+='Continue the SAME media destruction from where you left off. Do NOT
 partPrompt+='THIS PART ALONE must be at least '+getForgeWordsPerPart(selectedMediaParts).toLocaleString()+' words. Sermon-length depth is mandatory. Do NOT cut short.\n\n';
 partPrompt+=buildMediaDestroyPrompt(mediaCurrentTitle,explicit,israelite,partNum,selectedMediaParts,wantRoughBez);
 }
-var handlerName='media-part-'+partNum+'-'+Date.now();
 if(partNum>1){
 var divider=document.createElement('div');
 divider.className='part-divider';
@@ -6168,36 +6174,80 @@ loader.id='mediaLoader'+partNum;
 loader.innerHTML='<div class="loading-pulse"></div><div class="loading-text">Destroying Part '+partNum+' of '+selectedMediaParts+'...</div>';
 body.appendChild(loader);
 loader.scrollIntoView({behavior:'smooth',block:'center'});
-var partContent='';
-window.Poe.registerHandler(handlerName,function(result){
-var msg=result.responses[0];
-if(msg.status==='error'){
+var partAccumulated='';
+mediaAutoContinueCount=0;
+var isFinalPart=(partNum===selectedMediaParts);
+function finishMediaPart(partText){
 var ldr=document.getElementById('mediaLoader'+partNum);if(ldr)ldr.remove();
-partContainer.innerHTML='<div class="error-state"><i class="fas fa-exclamation-triangle"></i> Error: '+msg.statusText+'</div>';
-btn.disabled=false;
-btn.innerHTML='<i class="fas fa-film"></i> Destroy Media';
-}else if(msg.status==='incomplete'){
-partContent=stripMediaSources(msg.content||'');
-partContainer.innerHTML=marked.parse(partContent);
-}else if(msg.status==='complete'){
-partContent=stripMediaSources(msg.content||'');
-partContainer.innerHTML=marked.parse(partContent);
-var ldr2=document.getElementById('mediaLoader'+partNum);if(ldr2)ldr2.remove();
 if(partNum===1){
-mediaRawResult=partContent;
+mediaRawResult=partText;
 }else{
-mediaRawResult+='\n\n'+partContent;
+mediaRawResult+='\n\n'+partText;
 }
 mediaContinueCount++;
 generateMediaPart(partNum+1);
 }
+function sendMediaPartMsg(promptText,isContinuation){
+var handlerName='media-part-'+partNum+'-'+(isContinuation?'c'+mediaAutoContinueCount+'-':'')+Date.now();
+window.Poe.registerHandler(handlerName,function(result){
+var msg=result.responses[0];
+if(!msg)return;
+if(msg.status==='error'){
+var ldr=document.getElementById('mediaLoader'+partNum);if(ldr)ldr.remove();
+if(partAccumulated){
+partContainer.innerHTML=marked.parse(partAccumulated);
+if(partNum===1){mediaRawResult=partAccumulated;}else{mediaRawResult+='\n\n'+partAccumulated;}
+actions.style.display='flex';
+}else{
+partContainer.innerHTML='<div class="error-state"><i class="fas fa-exclamation-triangle"></i> Error: '+msg.statusText+'</div>';
+}
+btn.disabled=false;
+btn.innerHTML='<i class="fas fa-film"></i> Destroy Media';
+}else if(msg.status==='incomplete'){
+var chunk=stripMediaSources(msg.content||'');
+var display=isContinuation?(partAccumulated+'\n\n'+chunk):chunk;
+partContainer.innerHTML=marked.parse(display);
+}else if(msg.status==='complete'){
+var chunk=stripMediaSources(msg.content||'');
+partAccumulated=isContinuation?(partAccumulated+'\n\n'+chunk):chunk;
+partContainer.innerHTML=marked.parse(partAccumulated);
+var cutOff=mediaLooksIncomplete(partAccumulated);
+if(cutOff&&mediaAutoContinueCount<MEDIA_MAX_AUTO_CONTINUES){
+mediaAutoContinueCount++;
+var segLabel=selectedMediaParts===1?'segment':'Part '+partNum;
+btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Continuing '+segLabel+' ('+mediaAutoContinueCount+'/'+MEDIA_MAX_AUTO_CONTINUES+')...';
+var contPrompt;
+var isLastContinue=(mediaAutoContinueCount===MEDIA_MAX_AUTO_CONTINUES);
+if(isLastContinue&&isFinalPart){
+contPrompt='FINAL SEGMENT -- This is your last allowed continuation for this destruction. Continue EXACTLY where you left off, then you MUST deliver a strong final verdict and closing warning. Do NOT leave sentences hanging. Do NOT repeat prior material.\n\n"...'+partAccumulated.slice(-300)+'"\n\nCONTINUE AND CLOSE NOW:';
+}else if(cutOff){
+contPrompt='Continue EXACTLY where you left off. Do NOT repeat anything you already wrote. Do NOT add introductions or transitions. Just pick up mid-sentence or mid-section and keep going with the same energy, same voice, same format. Here is the last 300 characters of what you already wrote so you know where you stopped:\n\n"...'+partAccumulated.slice(-300)+'"\n\nCONTINUE NOW:';
+}else{
+contPrompt='You finished a section but this part is not done yet. Go DEEPER -- more scenes, more characters, more symbolism, more scripture strikes, more exposure. Do NOT repeat what you already wrote. Do NOT summarize. Here is the last 300 characters of what you wrote:\n\n"...'+partAccumulated.slice(-300)+'"\n\nCONTINUE WITH NEW MATERIAL NOW:';
+}
+sendMediaPartMsg(contPrompt,true);
+}else{
+if(cutOff){
+showToast('Reached model output limit — ending may be abrupt.');
+}
+finishMediaPart(partAccumulated);
+}
+}
 });
-window.Poe.sendUserMessage('@'+model+' '+partPrompt,{handler:handlerName,stream:true,openChat:false,parameters:params}).catch(function(err){
+window.Poe.sendUserMessage('@'+model+' '+promptText,{handler:handlerName,stream:true,openChat:false,parameters:params}).catch(function(err){
 var ldr3=document.getElementById('mediaLoader'+partNum);if(ldr3)ldr3.remove();
+if(partAccumulated){
+partContainer.innerHTML=marked.parse(partAccumulated);
+if(partNum===1){mediaRawResult=partAccumulated;}else{mediaRawResult+='\n\n'+partAccumulated;}
+actions.style.display='flex';
+}else{
 partContainer.innerHTML='<div class="error-state"><i class="fas fa-exclamation-triangle"></i> Error: '+err+'</div>';
+}
 btn.disabled=false;
 btn.innerHTML='<i class="fas fa-film"></i> Destroy Media';
 });
+}
+sendMediaPartMsg(partPrompt,false);
 }
 body.innerHTML='';
 generateMediaPart(1);
