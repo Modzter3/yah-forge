@@ -826,13 +826,14 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 <div class="tab-panel" id="panelMedia">
   <div class="dismantle-wrap">
     <div class="dismantle-desc">
-      <i class="fas fa-film"></i> <strong>Enter a Movie, TV Show, or Video Game title</strong> -- Yah will scour the web for plot spoilers, themes, and content, then destroy it through the Israelite theological framework. Exposing Hollywood's agenda.
+      <i class="fas fa-film"></i> <strong>Enter a Movie, TV Show, or Video Game title</strong> -- Yah scours the web for plot details, then destroys it through the Israelite lens. For <strong>TV seasons</strong>, enable <strong>Episode by Episode</strong> to break down what happened in each episode (not just a season overview).
     </div>
-    <textarea class="dismantle-textarea" id="mediaInput" placeholder="Enter the title of a movie, TV show, or video game (e.g., 'The Matrix', 'Breaking Bad', 'Elden Ring')..."></textarea>
+    <textarea class="dismantle-textarea" id="mediaInput" placeholder="TV season: 'The Chi Season 7', 'Power Book II Season 4' -- or movie/game: 'The Matrix', 'Elden Ring'..."></textarea>
     <div class="dismantle-controls">
       <label class="toggle-switch"><input type="checkbox" id="mediaExplicit" checked=""><span class="toggle-track"></span><span>Explicit</span></label>
       <label class="toggle-switch"><input type="checkbox" id="mediaIsraelite" checked=""><span class="toggle-track israelite-track"></span><span><i class="fas fa-users" style="color:#38bdb0;margin-right:3px;font-size:0.65rem;"></i>Israelite</span></label>
-      <label class="toggle-switch"><input type="checkbox" id="mediaRoughBez"><span class="toggle-track rough-track"></span><span><i class="fas fa-bullhorn" style="color:#ff6f00;margin-right:3px;font-size:0.65rem;"></i>Rough Bezaleel</span></label>
+      <label class="toggle-switch"><input type="checkbox" id="mediaRoughBez"><span class="toggle-track rough-track"></span><span><i class="fas fa-bullhorn" style="color:#ff6f00;margin-right:3px;font-size:0.7rem;"></i>Rough Bezaleel</span></label>
+      <label class="toggle-switch" title="Search each episode plot and destroy scene-by-scene -- not a season overview"><input type="checkbox" id="mediaEpisodeMode"><span class="toggle-track" style="background:linear-gradient(135deg,#2a1a4a,#1a0d35);"></span><span><i class="fas fa-list-ol" style="color:#c084fc;margin-right:3px;font-size:0.7rem;"></i>Episode by Episode</span></label>
       <div style="min-width:180px;">
         <select class="model-select" id="mediaModel" style="width:100%;" onchange="onMediaModelDropdown()">
           <optgroup label="⚡ Budget / Fast">
@@ -2477,8 +2478,11 @@ p+='Before you write, you MUST use your web search tool to research THIS topic. 
 p+='SEARCH FOR:\n';
 p+='1. CURRENT NEWS (2024-2026) directly related to "'+(topic?topic.title:'this topic')+'" -- real headlines, events, trends, court cases, policies, cultural shifts, and world developments that connect to what scripture teaches about this subject. Show the listener that prophecy is not ancient history -- it is happening RIGHT NOW on their timeline.\n';
 p+='2. If "'+(topic?topic.title:'this topic')+'" involves a movie, TV show, streaming series, video game, album, celebrity, or popular media property -- search for plot details, characters, themes, endings, twists, controversies, and cultural impact so you can speak about it accurately.\n';
+if(looksLikeTvSeason(topic?topic.title:'')){
+p+='3. TV SEASON RESEARCH: Search episode-by-episode -- exact episode count, titles, and what happened in EACH episode (scenes, deaths, twists, dialogue). Do NOT use only a season overview. Name specific episodes and plot beats in the sermon.\n';
+}
 if(chapterSrc){
-p+='3. For this scripture chapter ('+chapterSrc.book+' Chapter '+chapterSrc.chapter+'), search for CURRENT events in the world TODAY that mirror, fulfill, or parallel what this chapter describes -- oppression, judgment, deception, restoration, famine, war, idolatry, exile, or whatever themes the chapter carries.\n';
+p+=(looksLikeTvSeason(topic?topic.title:'')?'4. ':'3. ')+'For this scripture chapter ('+chapterSrc.book+' Chapter '+chapterSrc.chapter+'), search for CURRENT events in the world TODAY that mirror, fulfill, or parallel what this chapter describes -- oppression, judgment, deception, restoration, famine, war, idolatry, exile, or whatever themes the chapter carries.\n';
 }
 p+='\nHOW TO USE WHAT YOU FIND:\n';
 p+='- Weave current events into the sermon naturally as PROOF the Most High told the truth in advance. Make the listener feel the prophecy breathing in today\'s headlines.\n';
@@ -6045,6 +6049,64 @@ var mediaContinueCount=0;
 var mediaAutoContinueCount=0;
 var MEDIA_MAX_AUTO_CONTINUES=6;
 var mediaLooksIncomplete=dismantleLooksIncomplete;
+var mediaEpisodeModeActive=false;
+function looksLikeTvSeason(title){
+var t=String(title||'').trim();
+if(!t)return false;
+if(/\bseason\s*[#:]?\s*\d+/i.test(t))return true;
+if(/\bS\s*0?\d{1,2}\b/i.test(t))return true;
+if(/\bseason\s+[IVXLC]+\b/i.test(t))return true;
+if(/\bseries\s+\d+/i.test(t))return true;
+return false;
+}
+function isMediaEpisodeModeEnabled(title){
+var el=document.getElementById('mediaEpisodeMode');
+if(el&&el.checked)return true;
+return looksLikeTvSeason(title);
+}
+function updateMediaEpisodeToggle(){
+var input=document.getElementById('mediaInput');
+var el=document.getElementById('mediaEpisodeMode');
+if(!input||!el)return;
+if(looksLikeTvSeason(input.value.trim()))el.checked=true;
+}
+function buildMediaEpisodeModeBlock(title,currentPart,totalParts,wantRoughBez){
+var p='\n*** TV SEASON -- EPISODE-BY-EPISODE MODE (MANDATORY) ***\n';
+p+='"' +title+'" is a TV SEASON. Use web search to pull GRANULAR per-episode data -- NOT a lazy season recap from memory.\n\n';
+p+='STEP 1 -- SEARCH BEFORE YOU WRITE:\n';
+p+='- Find the EXACT episode count for this season.\n';
+p+='- Find official episode titles when available.\n';
+p+='- Find what ACTUALLY HAPPENED in each episode: opening scenes, deaths, twists, lies, sex, violence, sermons, symbols, cliffhangers, finale fallout.\n';
+p+='- If you only have a vague season summary, SEARCH HARDER -- episode guides, recaps, wiki episode pages, fan wikis, entertainment databases -- until you have real per-episode plots.\n\n';
+p+='STEP 2 -- STRUCTURE (NON-NEGOTIABLE):\n';
+p+='- Go EPISODE BY EPISODE in order. Each episode gets its own ## header: ## Episode 1: [Title If Known]\n';
+p+='- Inside each episode: WHAT HAPPENED (scene-level plot) THEN theological destruction of what that episode pushed.\n';
+p+='- FORBIDDEN: One big "season overview." FORBIDDEN: "Throughout the season..." without naming the episode. FORBIDDEN: Skipping episodes. FORBIDDEN: Melting multiple episodes into one vague paragraph.\n';
+p+='- REQUIRED: Name characters, scenes, quotes, twists, and endings for THAT episode before you preach on it.\n\n';
+if(totalParts>1){
+p+='STEP 3 -- MULTI-PART EPISODE ASSIGNMENT:\n';
+p+='This is PART '+currentPart+' of '+totalParts+'. After web search reveals total episode count E:\n';
+p+='- Divide all E episodes EVENLY across '+totalParts+' parts.\n';
+if(currentPart===1){
+p+='- Part 1 covers ONLY the FIRST chunk of episodes. If E=12 across '+totalParts+' parts, you might get episodes 1-2 or 1-3 -- do NOT jump to later episodes.\n';
+}else if(currentPart===totalParts){
+p+='- FINAL PART: cover the LAST chunk through the season finale. Destroy the finale on its own terms, then deliver a brutal season verdict.\n';
+}else{
+p+='- Middle part: cover ONLY your assigned middle chunk. One sentence bridge MAX, then start on the next episode immediately.\n';
+}
+p+='- Open with a line stating which episodes you are covering (e.g. "Episodes 4 through 6"), then destroy EACH in order.\n';
+p+='- Do NOT touch episodes assigned to other parts. Do NOT recap prior episodes beyond one sentence.\n\n';
+}else{
+p+='STEP 3 -- SINGLE PART:\n';
+p+='Cover EVERY episode from Episode 1 through the finale. Each gets ## Episode N with full plot exposure AND destruction. No episode left behind.\n\n';
+}
+if(wantRoughBez){
+p+='DELIVERY: Rip each episode like you watched it with your cousin and you are calling out every lie AS IT HAPPENS on screen.\n\n';
+}else{
+p+='DELIVERY: The listener should know exactly what happened in every episode after hearing this -- then know why it is poison.\n\n';
+}
+return p;
+}
 function setMediaParts(n){
 selectedMediaParts=n;
 var btns=document.querySelectorAll('#mediaPartBtns .part-count-btn');
@@ -6068,9 +6130,10 @@ document.addEventListener('input',function(e){
 if(e.target&&e.target.id==='mediaInput'){
 var len=e.target.value.length;
 document.getElementById('mediaCharCount').textContent=len.toLocaleString()+' chars';
+updateMediaEpisodeToggle();
 }
 });
-function buildMediaDestroyPrompt(title,explicit,israelite,currentPart,totalParts,wantRoughBez){
+function buildMediaDestroyPrompt(title,explicit,israelite,currentPart,totalParts,wantRoughBez,episodeMode){
 var wordsPerPart=getForgeWordsPerPart(totalParts);
 var totalWords=getForgeTotalWords(totalParts);
 var p='*** CONTEXT: EDUCATIONAL & RELIGIOUS COMMENTARY ***\n';
@@ -6115,15 +6178,27 @@ p+='- Women submit, stay silent, cover heads. Feminism = Jezebel witchcraft.\n';
 p+='- The Bible is a TECHNICAL MANUAL -- not a storybook. Every law is an operational protocol, every prophecy a specification. Hollywood REVERSES this.\n\n';
 p+='HIT THESE ANGLES WHEREVER THEY APPLY (weave them naturally, don\'t label them):\n';
 p+='Identity theft (who\'s playing Israelite roles when they\'re NOT Israel). Doctrine inversion (what scripture ACTUALLY teaches vs. Hollywood\'s twisted version). Cosmology lies (globe earth programming, space fakery). Prophecy mockery (end times themes twisted). Adversary glorification (villains presented as heroes, or vice versa). Deception as entertainment (idolatry, false religions dressed up as "fantasy"). Law mockery (Torah principles violated or ridiculed). Eschatology manipulation (judgment, kingdom, return themes corrupted).\n\n';
+if(episodeMode){
+p+=buildMediaEpisodeModeBlock(title,currentPart,totalParts,wantRoughBez);
+}
 p+='STRUCTURE:\n';
 if(wantRoughBez){
 p+='- YOUR FIRST LINE must be a hard TITLE in the format: # [Your Title Here]\n';
 p+='- The title should sound like a warning spray-painted on a wall, not a review headline. Make it blunt, vulgar if needed, and specific to this media.\n';
 p+='- AFTER the title, dive STRAIGHT into destruction. NO welcome. NO genre recap paragraph. NO polite context. Open with a scripture strike, a direct accusation, or a street-level rant already tearing into the first lie.\n';
+if(episodeMode){
+p+='- Use ## Episode N: [Title] headers -- one per episode. Do NOT use generic theme headers instead of episode headers.\n';
+}else{
 p+='- Use ## headers to organize the carnage (e.g., ## This Plot Is Witchcraft, ## Who They Really Made The Hero, ## The Ending Is Babylon Programming, ## Burn It Down).\n';
+}
+}else{
+if(episodeMode){
+p+='- YOUR FIRST LINE must be a title: # [Your Title Here]\n';
+p+='- Then go episode by episode with ## Episode N: [Title] headers. No season overview opener.\n';
 }else{
 p+='- Open with 2-3 sentences: what is this media, genre, release date, cultural impact.\n';
 p+='- Use ## headers to organize (e.g., ## Plot Overview, ## The Serpent Seed Fingerprints, ## Who\'s Really Being Portrayed, ## The Verdict).\n';
+}
 }
 p+='- SPOIL EVERYTHING. Plot, twists, endings, secrets. FULL EXPOSURE.\n';
 p+='- Identify archetypes, symbols, patterns: savior figures (is it Yod-He-Waw-Shin-Ayin or a counterfeit?), Babylonian imagery, occult references, anti-Messiah themes.\n';
@@ -6141,6 +6216,11 @@ p+='You MUST write at least '+wordsPerPart.toLocaleString()+' words for this '+(
 p+='MINIMUM '+wordsPerPart.toLocaleString()+' words. Do NOT cut short. Do NOT stop early. Do NOT give little bitty sections. A short response is a FAILED response. If you finish your assigned angles before hitting the word count, keep going deeper: more scenes, more characters, more symbolism, more scripture strikes, more modern application, more exposure of hidden messaging.\n';
 p+='Do NOT mention word counts anywhere in the output. No "approximately 2,000 words" or "word count" or length targets in the text. The word count instruction is for YOUR guidance only.\n\n';
 if(totalParts>1){
+if(episodeMode){
+p+='MULTI-PART EPISODE DESTRUCTION:\n';
+p+='This is PART '+currentPart+' of '+totalParts+'. Follow the episode assignment rules above -- they override generic pacing below.\n';
+p+='EACH PART MUST BE AT LEAST '+wordsPerPart.toLocaleString()+' WORDS ON ITS OWN.\n\n';
+}else{
 p+='MULTI-PART DESTRUCTION:\n';
 p+='This is PART '+currentPart+' of '+totalParts+'.\n';
 p+='EACH PART MUST BE AT LEAST '+wordsPerPart.toLocaleString()+' WORDS ON ITS OWN. Treat every part like a full sermon-length installment, not a chapter summary.\n';
@@ -6165,6 +6245,7 @@ p+='Middle part ('+currentPart+' of '+totalParts+'): Continue the breakdown. You
 }
 }
 p+='\n';
+}
 }else{
 if(wantRoughBez){
 p+='LENGTH: Single-part street execution. MINIMUM '+wordsPerPart.toLocaleString()+' words. Every major theme, character, and plot point gets cursed apart. Do NOT rush. Go DEEP and stay vulgar.\n';
@@ -6181,11 +6262,12 @@ function startMediaDestroy(){
 var input=document.getElementById('mediaInput').value.trim();
 if(!input){showToast('Enter a media title first (movie, TV show, or video game).');return;}
 mediaCurrentTitle=input;
+mediaEpisodeModeActive=isMediaEpisodeModeEnabled(input);
 var model=getMediaModel();
 var wantRoughBez=document.getElementById('mediaRoughBez').checked;
 var explicit=document.getElementById('mediaExplicit').checked||wantRoughBez;
 var israelite=document.getElementById('mediaIsraelite').checked||wantRoughBez;
-var prompt=buildMediaDestroyPrompt(input,explicit,israelite,1,selectedMediaParts,wantRoughBez);
+var prompt=buildMediaDestroyPrompt(input,explicit,israelite,1,selectedMediaParts,wantRoughBez,mediaEpisodeModeActive);
 var btn=document.getElementById('mediaBtn');
 var output=document.getElementById('mediaOutput');
 var body=document.getElementById('mediaBody');
@@ -6195,7 +6277,7 @@ mediaContinueCount=0;
 btn.disabled=true;
 btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Destroying...';
 output.classList.add('visible');
-body.innerHTML='<div class="loading-state"><div class="loading-pulse"></div><div class="loading-text">'+(wantRoughBez?'Brother Bez is tearing this apart street preacher style...':'Yah is researching and destroying this media...')+'</div></div>';
+body.innerHTML='<div class="loading-state"><div class="loading-pulse"></div><div class="loading-text">'+(mediaEpisodeModeActive?'Researching episodes and destroying one by one...':(wantRoughBez?'Brother Bez is tearing this apart street preacher style...':'Yah is researching and destroying this media...'))+'</div></div>';
 actions.style.display='none';
 var params=getWebSearchParams(model);
 function generateMediaPart(partNum){
@@ -6210,12 +6292,15 @@ return;
 }
 var partPrompt;
 if(partNum===1){
-partPrompt=buildMediaDestroyPrompt(mediaCurrentTitle,explicit,israelite,partNum,selectedMediaParts,wantRoughBez);
+partPrompt=buildMediaDestroyPrompt(mediaCurrentTitle,explicit,israelite,partNum,selectedMediaParts,wantRoughBez,mediaEpisodeModeActive);
 }else{
 partPrompt='CONTINUATION -- Part '+partNum+' of '+selectedMediaParts+'.\n';
+if(mediaEpisodeModeActive){
+partPrompt+='Continue EPISODE-BY-EPISODE. Stay on your assigned episodes ONLY. Do NOT revert to season overview mode. Do NOT recap episodes already destroyed.\n';
+}
 partPrompt+='Continue the SAME media destruction from where you left off. Do NOT restart from the beginning. Do NOT give a long recap -- one sentence bridge MAX, then keep destroying.\n';
 partPrompt+='THIS PART ALONE must be at least '+getForgeWordsPerPart(selectedMediaParts).toLocaleString()+' words. Sermon-length depth is mandatory. Do NOT cut short.\n\n';
-partPrompt+=buildMediaDestroyPrompt(mediaCurrentTitle,explicit,israelite,partNum,selectedMediaParts,wantRoughBez);
+partPrompt+=buildMediaDestroyPrompt(mediaCurrentTitle,explicit,israelite,partNum,selectedMediaParts,wantRoughBez,mediaEpisodeModeActive);
 }
 if(partNum>1){
 var divider=document.createElement('div');
@@ -6279,9 +6364,9 @@ var isLastContinue=(mediaAutoContinueCount===MEDIA_MAX_AUTO_CONTINUES);
 if(isLastContinue&&isFinalPart){
 contPrompt='FINAL SEGMENT -- This is your last allowed continuation for this destruction. Continue EXACTLY where you left off, then you MUST deliver a strong final verdict and closing warning. Do NOT leave sentences hanging. Do NOT repeat prior material.\n\n"...'+partAccumulated.slice(-300)+'"\n\nCONTINUE AND CLOSE NOW:';
 }else if(cutOff){
-contPrompt='Continue EXACTLY where you left off. Do NOT repeat anything you already wrote. Do NOT add introductions or transitions. Just pick up mid-sentence or mid-section and keep going with the same energy, same voice, same format. Here is the last 300 characters of what you already wrote so you know where you stopped:\n\n"...'+partAccumulated.slice(-300)+'"\n\nCONTINUE NOW:';
+contPrompt=(mediaEpisodeModeActive?'Stay in EPISODE-BY-EPISODE mode. Finish the current episode or start the next assigned episode with scene-level plot detail.\n\n':'')+'Continue EXACTLY where you left off. Do NOT repeat anything you already wrote. Do NOT add introductions or transitions. Just pick up mid-sentence or mid-section and keep going with the same energy, same voice, same format. Here is the last 300 characters of what you already wrote so you know where you stopped:\n\n"...'+partAccumulated.slice(-300)+'"\n\nCONTINUE NOW:';
 }else{
-contPrompt='You finished a section but this part is not done yet. Go DEEPER -- more scenes, more characters, more symbolism, more scripture strikes, more exposure. Do NOT repeat what you already wrote. Do NOT summarize. Here is the last 300 characters of what you wrote:\n\n"...'+partAccumulated.slice(-300)+'"\n\nCONTINUE WITH NEW MATERIAL NOW:';
+contPrompt=(mediaEpisodeModeActive?'Stay in EPISODE-BY-EPISODE mode. Move to the next assigned episode with full plot detail before preaching.\n\n':'')+'You finished a section but this part is not done yet. Go DEEPER -- more scenes, more characters, more symbolism, more scripture strikes, more exposure. Do NOT repeat what you already wrote. Do NOT summarize. Here is the last 300 characters of what you wrote:\n\n"...'+partAccumulated.slice(-300)+'"\n\nCONTINUE WITH NEW MATERIAL NOW:';
 }
 sendMediaPartMsg(contPrompt,true);
 }else{
