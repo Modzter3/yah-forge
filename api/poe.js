@@ -20,9 +20,11 @@ export default async function handler(req) {
   const { bot, query, parameters = {} } = body;
   if (!bot || !query) return jsonError('Missing required fields: bot, query', 400);
 
+  const model = normalizePoeModel(bot);
+
   // Build OpenAI-compatible request — always stream so we can pipe SSE back
   const payload = {
-    model: bot,
+    model,
     messages: [{ role: 'user', content: query }],
     stream: true,
   };
@@ -66,7 +68,7 @@ export default async function handler(req) {
       const j = JSON.parse(raw);
       clean = j.error?.message || j.message || clean;
     } catch { /* keep clean as-is */ }
-    return jsonError(`Poe ${poeRes.status} (bot: ${bot}): ${clean || '(empty)'}`, poeRes.status >= 400 ? poeRes.status : 502);
+    return jsonError(`Poe ${poeRes.status} (bot: ${model}${model !== bot ? `, sent as ${bot}` : ''}): ${clean || '(empty)'}`, poeRes.status >= 400 ? poeRes.status : 502);
   }
 
   // Pipe the OpenAI-format SSE stream straight back to the browser
@@ -104,6 +106,15 @@ export default async function handler(req) {
       'X-Accel-Buffering': 'no',
     },
   });
+}
+
+/** Poe /v1/chat/completions expects lowercase API model IDs (e.g. claude-opus-5, gpt-5.6-sol). */
+function normalizePoeModel(bot) {
+  const lower = String(bot).trim().toLowerCase();
+  const aliases = {
+    'muse-spark-1.1': 'muse-spark-1-1',
+  };
+  return aliases[lower] || lower;
 }
 
 function corsHeaders() {
