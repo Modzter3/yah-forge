@@ -2374,7 +2374,7 @@ function nuclearStripSources(text){
 if(!text)return text;
 // Kill everything after the last real paragraph that looks like sources
 // Look for common source section markers and nuke everything after them
-var markers=['Sources:','Source:','References:','Reference:','Citations:','Citation:','Bibliography:','Works Cited:','Further Reading:','External Links:','See Also:','Learn more:','Related searches:'];
+var markers=['Sources:','Source:','References:','Reference:','Citations:','Citation:','Bibliography:','Works Cited:','Further Reading:','External Links:','See Also:','Learn more:','Related searches:','Works consulted:','Web sources:','Search results:'];
 for(var i=0;i<markers.length;i++){
 var marker=markers[i];
 // Require the colon so normal prose like "Reference to Enoch" doesn't get nuked
@@ -2384,13 +2384,40 @@ text=text.replace(regex,'');
 // Also catch if it's a heading
 var headingRegex=new RegExp('\\n+#{1,6}\\s*'+escaped+'\\s*\\n[\\s\\S]*$','gi');
 text=text.replace(headingRegex,'');
+// Catch bold/italic headings like **Sources:**
+var boldRegex=new RegExp('\\n+\\*{1,2}'+escaped+'\\*{1,2}\\s*\\n[\\s\\S]*$','gi');
+text=text.replace(boldRegex,'');
 }
 // Kill trailing URLs and link lists
-text=text.replace(/\n+(?:https?:\/\/[^\s\n]+\s*\n?){2,}$/g,'');
-text=text.replace(/\n+(?:[-*]\s*\[.*?\]\(https?:\/\/.*?\)\s*\n?){2,}$/g,'');
+text=text.replace(/\n+(?:https?:\/\/[^\s\n]+\s*\n?){1,}$/g,'');
+text=text.replace(/\n+(?:[-*]\s*\[.*?\]\(https?:\/\/.*?\)\s*\n?){1,}$/g,'');
 // Clean up trailing whitespace
 text=text.replace(/\s+$/,'');
 return text;
+}
+// Media destruction: strip web-search citations, links, and source blocks from output
+function stripMediaSources(text){
+if(!text)return text;
+text=stripSermonPreamble(text);
+// Inline markdown links -- drop numeric citations, keep descriptive text only
+text=text.replace(/\[([^\]]+)\]\(https?:\/\/[^\)]+\)/g,function(m,label){
+if(/^\d+$/.test(label.trim()))return '';
+return label;
+});
+// Bare citation numbers [1] [12]
+text=text.replace(/\[\d+\]/g,'');
+// Parenthetical URLs
+text=text.replace(/\(https?:\/\/[^\)]+\)/g,'');
+// Standalone URL lines anywhere in the body
+text=text.replace(/^\s*https?:\/\/\S+\s*$/gm,'');
+// Web-search meta openers models sometimes prepend
+text=text.replace(/^(?:Based on (?:my )?web search[^\n]*\n|According to (?:my )?(?:web )?search[^\n]*\n|I (?:searched|looked up|found) (?:this )?(?:online|on the web)[^\n]*\n)+/gim,'');
+// "Source:" / "Sources:" blocks even when not at end
+text=text.replace(/\n+#{1,6}\s*Sources?:?\s*\n[\s\S]*?(?=\n#{1,3}\s+[A-Za-z]|\s*$)/gi,'\n');
+text=text.replace(/\n+\*{1,2}Sources?:?\*{1,2}\s*\n[\s\S]*?(?=\n#{1,3}\s|\n\*{0,2}[A-Z]|\s*$)/gi,'\n');
+text=nuclearStripSources(text);
+text=text.replace(/\n{3,}/g,'\n\n');
+return text.trim();
 }
 /* ==========================================
 7-PART SERMON SERIES ENGINE
@@ -6034,7 +6061,9 @@ p+='- Identify archetypes, symbols, patterns: savior figures (is it Yod-He-Waw-S
 p+='- If the media accidentally aligns with scripture, acknowledge it briefly -- then dig into what it STILL got wrong or twisted. When referencing specific scripture, ONLY cite chapter and verse if you are 100% CERTAIN they exist. Otherwise, reference scripture generally ("Scripture teaches...", "The Bible emphasizes...") without fabricating verse numbers.\n\n';
 p+='*** CRITICAL INSTRUCTION - DO NOT VIOLATE: ***\n';
 p+='ABSOLUTELY ZERO SOURCES, CITATIONS, REFERENCES, OR LINKS OF ANY KIND.\n';
-p+='NO "Sources:" section. NO "References:" section. NO "Learn more" footers. NO "Related searches." NO "Based on:" lines. NO URLs. NO hyperlinks.\n';
+p+='You MAY use web search silently to gather plot details -- but the output must NEVER show that you searched. No one should know you looked anything up.\n';
+p+='NO "Sources:" section. NO "References:" section. NO "Learn more" footers. NO "Related searches." NO "Based on:" lines. NO "According to Wikipedia/IMDB/Rotten Tomatoes" attributions. NO URLs. NO hyperlinks. NO footnotes. NO [1] [2] citation numbers. NO markdown links.\n';
+p+='Write like you already know this media inside out -- not like you are citing a research paper.\n';
 p+='This text will be read aloud by AI voice narration. ANY sources or citations will RUIN the flow and sound terrible when spoken.\n';
 p+='END your breakdown naturally without appending any reference materials whatsoever.\n';
 p+='PURE BREAKDOWN ONLY - no academic citations needed.\n\n';
@@ -6148,14 +6177,12 @@ partContainer.innerHTML='<div class="error-state"><i class="fas fa-exclamation-t
 btn.disabled=false;
 btn.innerHTML='<i class="fas fa-film"></i> Destroy Media';
 }else if(msg.status==='incomplete'){
-partContent=stripThinking(msg.content||'');
+partContent=stripMediaSources(msg.content||'');
 partContainer.innerHTML=marked.parse(partContent);
 }else if(msg.status==='complete'){
-partContent=stripSermonPreamble(msg.content||'');
+partContent=stripMediaSources(msg.content||'');
 partContainer.innerHTML=marked.parse(partContent);
 var ldr2=document.getElementById('mediaLoader'+partNum);if(ldr2)ldr2.remove();
-// NUCLEAR: Strip sources one final time before saving for voice narration
-partContent=nuclearStripSources(partContent);
 if(partNum===1){
 mediaRawResult=partContent;
 }else{
@@ -6177,19 +6204,19 @@ generateMediaPart(1);
 }
 function copyMediaResult(){
 if(!mediaRawResult){showToast('Nothing to copy.');return;}
-var text=nuclearStripSources(stripSermonPreamble(mediaRawResult));
+var text=stripMediaSources(mediaRawResult);
 rawCopy(text);
 showToast('Media destruction copied!');
 }
 function copyMediaResultPlain(){
 if(!mediaRawResult){showToast('Nothing to copy.');return;}
-var text=stripMarkdownForTTS(nuclearStripSources(stripSermonPreamble(mediaRawResult)));
+var text=stripMarkdownForTTS(stripMediaSources(mediaRawResult));
 rawCopy(text);
 showToast('Copied as plain text (no markdown) -- ready for ElevenLabs!');
 }
 function exportMediaResult(){
 if(!mediaRawResult){showToast('Nothing to export.');return;}
-var text=nuclearStripSources(stripSermonPreamble(mediaRawResult));
+var text=stripMediaSources(mediaRawResult);
 var filename='MediaDestroyed_'+(mediaCurrentTitle||'media').replace(/[^a-zA-Z0-9 ]/g,'').replace(/\s+/g,'_').substring(0,50)+'.txt';
 var blob=new Blob([text],{type:'text/plain'});
 var url=URL.createObjectURL(blob);
@@ -6203,7 +6230,7 @@ function readMediaAloud(){
 if(!mediaRawResult){showToast('Nothing to read.');return;}
 var voice=document.getElementById('mediaTtsVoice').value;
 // CRITICAL: Nuclear strip sources before TTS to prevent them from being read aloud
-var text=nuclearStripSources(stripSermonPreamble(mediaRawResult));
+var text=stripMarkdownForTTS(stripMediaSources(mediaRawResult));
 var btn=document.querySelector('#mediaActions .tts-btn');
 doTTS(text,voice,'mediaTtsAudioWrap',btn);
 }
