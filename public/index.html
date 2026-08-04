@@ -1138,6 +1138,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <label class="toggle-switch"><input type="checkbox" id="toggleIsraelite"><span class="toggle-track israelite-track"></span><span><i class="fas fa-users" style="color:#38bdb0;margin-right:3px;font-size:0.7rem;"></i>Israelite</span></label>
       <label class="toggle-switch"><input type="checkbox" id="toggleRoughBez"><span class="toggle-track rough-track"></span><span><i class="fas fa-bullhorn" style="color:#ff6f00;margin-right:3px;font-size:0.7rem;"></i>Rough Bezaleel</span></label>
       <label class="toggle-switch" title="Search current news and media details related to this topic -- woven into the sermon with no citations"><input type="checkbox" id="toggleWebResearch" checked=""><span class="toggle-track" style="background:linear-gradient(135deg,#1a3a4a,#0d2535);"></span><span><i class="fas fa-globe" style="color:#38bdb0;margin-right:3px;font-size:0.7rem;"></i>Live Research</span></label>
+      <label class="toggle-switch" title="For TV seasons: search each episode plot and preach through scene-by-scene"><input type="checkbox" id="toggleSermonEpisodeMode"><span class="toggle-track" style="background:linear-gradient(135deg,#2a1a4a,#1a0d35);"></span><span><i class="fas fa-list-ol" style="color:#c084fc;margin-right:3px;font-size:0.7rem;"></i>Episode by Episode</span></label>
       <div class="model-select-wrap">
         <label><i class="fas fa-robot"></i> Model:</label>
         <select class="model-select" id="modelSelect" onchange="onSermonModelDropdown()">
@@ -1785,6 +1786,7 @@ onNewsDatePreset();
 }
 document.getElementById('searchInput').addEventListener('input',function(e){searchTerm=e.target.value.toLowerCase().trim();renderTopics();});
 document.getElementById('customTopicInput').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();forgeCustomTopic();}});
+document.getElementById('customTopicInput').addEventListener('input',function(e){updateSermonEpisodeToggle(e.target.value.trim());});
 }
 function switchTab(tab,el){
 var btns=document.querySelectorAll('.tab-btn');
@@ -2140,6 +2142,7 @@ titleEl.innerHTML+=(' <span class="mode-badge" style="background:rgba(139,26,26,
 titleEl.innerHTML+=(' <span class="mode-badge" style="background:rgba(212,160,23,0.15);color:var(--gold);">CUSTOM</span>');
 }
 descEl.textContent=currentTopic.desc;
+updateSermonEpisodeToggle(currentTopic?currentTopic.title:'');
 document.getElementById('sermonOutput').innerHTML='<div class="sermon-placeholder"><i class="fas fa-fire-flame-curved"></i>Configure options, choose your part count, then hit Generate to forge the sermon.</div>';
 document.getElementById('seriesProgress').style.display='none';
 document.getElementById('sermonActions').style.display='none';
@@ -2458,11 +2461,23 @@ var sermonPartsRaw=[];
 var sermonPartsTitles=[];
 var sermonPartsCombined='';
 var sermonUsedWebResearch=false;
+var sermonEpisodeModeActive=false;
+function isSermonEpisodeModeEnabled(title){
+var el=document.getElementById('toggleSermonEpisodeMode');
+if(el&&el.checked)return true;
+return looksLikeTvSeason(title);
+}
+function updateSermonEpisodeToggle(title){
+var el=document.getElementById('toggleSermonEpisodeMode');
+if(!el)return;
+if(looksLikeTvSeason(title||''))el.checked=true;
+}
 function sermonWebResearchEnabled(){
 var el=document.getElementById('toggleWebResearch');
 return el?el.checked:true;
 }
 function shouldSermonUseWebResearch(){
+if(sermonEpisodeModeActive)return true;
 if(!sermonWebResearchEnabled())return false;
 // News sermons already have pre-loaded article context
 if(currentMode==='news'&&currentNewsContext&&currentNewsContext.length>0)return false;
@@ -2504,6 +2519,7 @@ sermonPartsTitles=[];
 sermonPartsCombined='';
 currentChapterText=null;
 currentChapterVerseCount=0;
+sermonEpisodeModeActive=isSermonEpisodeModeEnabled(currentTopic.title);
 sermonUsedWebResearch=shouldSermonUseWebResearch();
 // Clear news context if not in news mode to prevent stale data
 if(currentMode!=='news')currentNewsContext=null;
@@ -3982,6 +3998,9 @@ p+='- ABSOLUTELY NO BRACKET TAGS OF ANY KIND. No [pause], [angry], [laughs], [wh
 p+='- No "Thinking..." or "Analyzing..." or "Let me consider..." preambles.\n';
 p+='- Do NOT mention word counts anywhere in the sermon. No "approximately 2,000 words" or "word count" or "I will write X words" or anything about length targets. The word count instruction is for YOUR guidance only -- it must NEVER appear in the output text.\n';
 p+='- Your VERY FIRST output must be the # title line, then '+openingInstruction+'. Nothing before the title. Zero preamble.\n';
+if(sermonEpisodeModeActive){
+p+=buildEpisodeModeBlock(topic.title,partNum,totalParts,wantRoughBez,'sermon');
+}
 if(shouldSermonUseWebResearch()){
 p+=buildWebResearchPromptBlock(topic,chapterSrc);
 }
@@ -6070,7 +6089,10 @@ var el=document.getElementById('mediaEpisodeMode');
 if(!input||!el)return;
 if(looksLikeTvSeason(input.value.trim()))el.checked=true;
 }
-function buildMediaEpisodeModeBlock(title,currentPart,totalParts,wantRoughBez){
+function buildEpisodeModeBlock(title,currentPart,totalParts,wantRoughBez,mode){
+var isSermon=(mode==='sermon');
+var followUp=isSermon?'scriptural teaching and prophetic exposure':'theological destruction';
+var followVerb=isSermon?'teach through':'destroy';
 var p='\n*** TV SEASON -- EPISODE-BY-EPISODE MODE (MANDATORY) ***\n';
 p+='"' +title+'" is a TV SEASON. Use web search to pull GRANULAR per-episode data -- NOT a lazy season recap from memory.\n\n';
 p+='STEP 1 -- SEARCH BEFORE YOU WRITE:\n';
@@ -6080,9 +6102,9 @@ p+='- Find what ACTUALLY HAPPENED in each episode: opening scenes, deaths, twist
 p+='- If you only have a vague season summary, SEARCH HARDER -- episode guides, recaps, wiki episode pages, fan wikis, entertainment databases -- until you have real per-episode plots.\n\n';
 p+='STEP 2 -- STRUCTURE (NON-NEGOTIABLE):\n';
 p+='- Go EPISODE BY EPISODE in order. Each episode gets its own ## header: ## Episode 1: [Title If Known]\n';
-p+='- Inside each episode: WHAT HAPPENED (scene-level plot) THEN theological destruction of what that episode pushed.\n';
+p+='- Inside each episode: WHAT HAPPENED (scene-level plot) THEN '+followUp+' of what that episode pushed.\n';
 p+='- FORBIDDEN: One big "season overview." FORBIDDEN: "Throughout the season..." without naming the episode. FORBIDDEN: Skipping episodes. FORBIDDEN: Melting multiple episodes into one vague paragraph.\n';
-p+='- REQUIRED: Name characters, scenes, quotes, twists, and endings for THAT episode before you preach on it.\n\n';
+p+='- REQUIRED: Name characters, scenes, quotes, twists, and endings for THAT episode before you '+followVerb+' it.\n\n';
 if(totalParts>1){
 p+='STEP 3 -- MULTI-PART EPISODE ASSIGNMENT:\n';
 p+='This is PART '+currentPart+' of '+totalParts+'. After web search reveals total episode count E:\n';
@@ -6090,22 +6112,27 @@ p+='- Divide all E episodes EVENLY across '+totalParts+' parts.\n';
 if(currentPart===1){
 p+='- Part 1 covers ONLY the FIRST chunk of episodes. If E=12 across '+totalParts+' parts, you might get episodes 1-2 or 1-3 -- do NOT jump to later episodes.\n';
 }else if(currentPart===totalParts){
-p+='- FINAL PART: cover the LAST chunk through the season finale. Destroy the finale on its own terms, then deliver a brutal season verdict.\n';
+p+='- FINAL PART: cover the LAST chunk through the season finale. '+followVerb.charAt(0).toUpperCase()+followVerb.slice(1)+' the finale on its own terms, then deliver a strong closing '+((isSermon)?'verdict and warning':'season verdict')+'.\n';
 }else{
 p+='- Middle part: cover ONLY your assigned middle chunk. One sentence bridge MAX, then start on the next episode immediately.\n';
 }
-p+='- Open with a line stating which episodes you are covering (e.g. "Episodes 4 through 6"), then destroy EACH in order.\n';
+p+='- Open with a line stating which episodes you are covering (e.g. "Episodes 4 through 6"), then '+followVerb+' EACH in order.\n';
 p+='- Do NOT touch episodes assigned to other parts. Do NOT recap prior episodes beyond one sentence.\n\n';
 }else{
 p+='STEP 3 -- SINGLE PART:\n';
-p+='Cover EVERY episode from Episode 1 through the finale. Each gets ## Episode N with full plot exposure AND destruction. No episode left behind.\n\n';
+p+='Cover EVERY episode from Episode 1 through the finale. Each gets ## Episode N with full plot exposure AND '+followUp+'. No episode left behind.\n\n';
 }
 if(wantRoughBez){
 p+='DELIVERY: Rip each episode like you watched it with your cousin and you are calling out every lie AS IT HAPPENS on screen.\n\n';
+}else if(isSermon){
+p+='DELIVERY: Teach through each episode in order. Connect what happened on screen to scripture and prophecy. The listener should know what happened in every episode AND what spiritual poison or truth it carried.\n\n';
 }else{
 p+='DELIVERY: The listener should know exactly what happened in every episode after hearing this -- then know why it is poison.\n\n';
 }
 return p;
+}
+function buildMediaEpisodeModeBlock(title,currentPart,totalParts,wantRoughBez){
+return buildEpisodeModeBlock(title,currentPart,totalParts,wantRoughBez,'media');
 }
 function setMediaParts(n){
 selectedMediaParts=n;
