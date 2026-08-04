@@ -1136,6 +1136,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <label class="toggle-switch explicit-toggle"><input type="checkbox" id="toggleExplicit"><span class="toggle-track explicit-track"></span><span><i class="fas fa-fire" style="color:var(--explicit-red);margin-right:3px;font-size:0.7rem;"></i>Explicit</span></label>
       <label class="toggle-switch"><input type="checkbox" id="toggleIsraelite"><span class="toggle-track israelite-track"></span><span><i class="fas fa-users" style="color:#38bdb0;margin-right:3px;font-size:0.7rem;"></i>Israelite</span></label>
       <label class="toggle-switch"><input type="checkbox" id="toggleRoughBez"><span class="toggle-track rough-track"></span><span><i class="fas fa-bullhorn" style="color:#ff6f00;margin-right:3px;font-size:0.7rem;"></i>Rough Bezaleel</span></label>
+      <label class="toggle-switch" title="Search current news and media details related to this topic -- woven into the sermon with no citations"><input type="checkbox" id="toggleWebResearch" checked=""><span class="toggle-track" style="background:linear-gradient(135deg,#1a3a4a,#0d2535);"></span><span><i class="fas fa-globe" style="color:#38bdb0;margin-right:3px;font-size:0.7rem;"></i>Live Research</span></label>
       <div class="model-select-wrap">
         <label><i class="fas fa-robot"></i> Model:</label>
         <select class="model-select" id="modelSelect" onchange="onSermonModelDropdown()">
@@ -1947,11 +1948,10 @@ params.reasoning_effort='none';
 }
 // Enable web_search for apocrypha and sealed texts on supported models
 if(type==='apocrypha'||type==='sealed'){
-var webModels=['Gemini-3-Flash','Gemini-3.6-Flash','Gemini-3.5-Flash','Gemini-3-Pro','GPT-5.2','GPT-5.4','Claude-Sonnet-4.5','Claude-Sonnet-4.6','Claude-Haiku-4.5','Claude-Sonnet-5','GPT-5.6-Sol','GPT-5.6-Terra','GPT-5.6-Luna','GPT-5.5-Pro','GPT-5.2-Instant','Muse-Spark-1.1','Gemini-3.5-Flash-Lite'];
-if(webModels.indexOf(normalizePoeBotId(model))!==-1){
+if(modelSupportsWebSearch(model)){
 params.web_search=true;
 // GPT-5.2 cannot use reasoning_effort=none with web_search
-if(model==='GPT-5.2')params.reasoning_effort='low';
+if(normalizePoeBotId(model)==='gpt-5.2')params.reasoning_effort='low';
 }
 }
 return params;
@@ -2211,6 +2211,27 @@ var lower=String(bot).trim().toLowerCase();
 if(lower==='muse-spark-1.1')return 'muse-spark-1-1';
 return lower;
 }
+var WEB_SEARCH_MODELS=['Gemini-3.1-Pro','Gemini-3-Pro','Gemini-3-Flash','Gemini-3.6-Flash','Gemini-3.5-Flash','Gemini-3.5-Flash-Lite','Claude-Sonnet-4.5','Claude-Sonnet-4.6','Claude-Haiku-4.5','Claude-Sonnet-5','Claude-Opus-4.6','Claude-Opus-4.1','Claude-Opus-4.7','Claude-Opus-4.8','Claude-Opus-5','GPT-5.2','GPT-5.4','GPT-5.5','GPT-5.5-Pro','GPT-5.6-Sol','GPT-5.6-Terra','GPT-5.6-Luna','GPT-5.2-Instant','GPT-5.4-Mini','GPT-5.4-Nano','Grok-4.5','Muse-Spark-1.1'];
+function modelSupportsWebSearch(model){
+return WEB_SEARCH_MODELS.some(function(m){return normalizePoeBotId(m)===normalizePoeBotId(model);});
+}
+function getWebSearchParams(model){
+var params={web_search:true};
+var ml=String(model||'').toLowerCase();
+if(ml.indexOf('gemini')!==-1&&ml.indexOf('flash')!==-1){
+params.thinking_level='minimal';
+}else if(ml.indexOf('gemini')!==-1){
+params.thinking_budget=0;
+}else if(ml.indexOf('claude')!==-1){
+params.thinking_budget=0;
+}else if(ml.indexOf('gpt-5')!==-1){
+params.reasoning_effort='none';
+}
+if(normalizePoeBotId(model)==='gpt-5.2'&&params.web_search){
+params.reasoning_effort='low';
+}
+return params;
+}
 function getSelectedModel(){
 var custom=(document.getElementById('customModelInput').value||'').trim();
 if(custom)return custom;
@@ -2276,8 +2297,7 @@ function updateNewsSearchNote(){
 var model=getNewsModel();
 var noteEl=document.getElementById('newsSearchNote');
 if(!noteEl)return;
-var webSearchModels=['Gemini-3.1-Pro','Gemini-3-Pro','Gemini-3-Flash','Gemini-3.6-Flash','Gemini-3.5-Flash','Claude-Sonnet-4.5','Claude-Sonnet-4.6','Claude-Haiku-4.5','GPT-5.2','GPT-5.4','GPT-5.5','Claude-Opus-4.6','Claude-Opus-4.1','Claude-Opus-4.7','Claude-Opus-4.8','Grok-4.5','Claude-Sonnet-5','Claude-Opus-5','GPT-5.6-Sol','GPT-5.6-Terra','GPT-5.6-Luna','GPT-5.5-Pro','GPT-5.2-Instant','Muse-Spark-1.1','Gemini-3.5-Flash-Lite','GPT-5.4-Mini','GPT-5.4-Nano'];
-var isKnownWebSearch=webSearchModels.some(function(m){return normalizePoeBotId(m)===normalizePoeBotId(model);});
+var isKnownWebSearch=modelSupportsWebSearch(model);
 var isCustom=(document.getElementById('customNewsModel').value||'').trim().length>0;
 if(isKnownWebSearch){
 noteEl.innerHTML='<i class="fas fa-check-circle" style="color:#38bdb0;margin-right:4px;"></i>Web search enabled -- real articles only';
@@ -2436,6 +2456,41 @@ var SERIES_PARTS=[
 var sermonPartsRaw=[];
 var sermonPartsTitles=[];
 var sermonPartsCombined='';
+var sermonUsedWebResearch=false;
+function sermonWebResearchEnabled(){
+var el=document.getElementById('toggleWebResearch');
+return el?el.checked:true;
+}
+function shouldSermonUseWebResearch(){
+if(!sermonWebResearchEnabled())return false;
+// News sermons already have pre-loaded article context
+if(currentMode==='news'&&currentNewsContext&&currentNewsContext.length>0)return false;
+return true;
+}
+function stripSermonContent(text){
+if(sermonUsedWebResearch)return stripMediaSources(text);
+return stripSermonPreamble(text);
+}
+function buildWebResearchPromptBlock(topic,chapterSrc){
+var p='\n*** LIVE WEB RESEARCH -- MANDATORY SILENT BACKGROUND USE ***\n';
+p+='Before you write, you MUST use your web search tool to research THIS topic. The search is for YOUR knowledge only -- the output must NEVER look like a research report.\n\n';
+p+='SEARCH FOR:\n';
+p+='1. CURRENT NEWS (2024-2026) directly related to "'+(topic?topic.title:'this topic')+'" -- real headlines, events, trends, court cases, policies, cultural shifts, and world developments that connect to what scripture teaches about this subject. Show the listener that prophecy is not ancient history -- it is happening RIGHT NOW on their timeline.\n';
+p+='2. If "'+(topic?topic.title:'this topic')+'" involves a movie, TV show, streaming series, video game, album, celebrity, or popular media property -- search for plot details, characters, themes, endings, twists, controversies, and cultural impact so you can speak about it accurately.\n';
+if(chapterSrc){
+p+='3. For this scripture chapter ('+chapterSrc.book+' Chapter '+chapterSrc.chapter+'), search for CURRENT events in the world TODAY that mirror, fulfill, or parallel what this chapter describes -- oppression, judgment, deception, restoration, famine, war, idolatry, exile, or whatever themes the chapter carries.\n';
+}
+p+='\nHOW TO USE WHAT YOU FIND:\n';
+p+='- Weave current events into the sermon naturally as PROOF the Most High told the truth in advance. Make the listener feel the prophecy breathing in today\'s headlines.\n';
+p+='- Reference events by what happened, not by where you read it. Say "Right now they are..." or "This week..." or "In twenty twenty-six..." -- NOT "According to CNN" or "Reuters reported."\n';
+p+='- If media is involved, speak like you already watched it, played it, or studied it -- spoil plot details freely when relevant.\n';
+p+='- Connect news to scripture strikes. The news is the RECEIPT. Scripture is the blueprint. Show both without sounding like a journalist.\n\n';
+p+='*** ZERO CITATIONS -- ABSOLUTE, NON-NEGOTIABLE ***\n';
+p+='NO "Sources:" section. NO "References:" section. NO URLs. NO hyperlinks. NO footnotes. NO [1] [2] citation numbers. NO markdown links. NO "According to Wikipedia/IMDB/BBC/Fox/CNN." NO "Based on my web search." NO "Learn more" footers.\n';
+p+='Write like a preacher who already knows what is happening in the world -- not like an academic paper. This text will be read aloud by AI voice. Citations RUIN the flow.\n';
+p+='Use web search SILENTLY. The listener should never know you looked anything up.\n\n';
+return p;
+}
 function generateSermon(){
 if(!currentTopic||isGenerating)return;
 isGenerating=true;
@@ -2445,6 +2500,7 @@ sermonPartsTitles=[];
 sermonPartsCombined='';
 currentChapterText=null;
 currentChapterVerseCount=0;
+sermonUsedWebResearch=shouldSermonUseWebResearch();
 // Clear news context if not in news mode to prevent stale data
 if(currentMode!=='news')currentNewsContext=null;
 if(currentMode!=='threads')currentThreadsContext=null;
@@ -2657,7 +2713,7 @@ partContainer.innerHTML='<div class="error-msg"><i class="fas fa-exclamation-tri
 document.getElementById('generateBtn').disabled=false;
 isGenerating=false;
 }else if(msg.status==='incomplete'){
-partContent=stripSermonPreamble(msg.content||'');
+partContent=stripSermonContent(msg.content||'');
 partContainer.innerHTML=marked.parse(partContent);
 // Extract title for internal tracking (title displays in the body heading)
 if(!titleExtracted&&partContent.length>40){
@@ -2667,7 +2723,7 @@ titleExtracted=true;
 }
 }
 }else if(msg.status==='complete'){
-partContent=stripSermonPreamble(msg.content||'');
+partContent=stripSermonContent(msg.content||'');
 partContainer.innerHTML=marked.parse(partContent);
 var extractedTitle=extractPartTitle(partContent,partNum);
 sermonPartsTitles.push(extractedTitle);
@@ -2679,7 +2735,8 @@ updateProgress(partNum);
 generatePart(partNum+1);
 }
 });
-window.Poe.sendUserMessage('@'+getSelectedModel()+' '+prompt,{handler:handlerName,stream:true,openChat:false,parameters:{}}).catch(function(err){
+var sermonParams=sermonUsedWebResearch?getWebSearchParams(getSelectedModel()):{};
+window.Poe.sendUserMessage('@'+getSelectedModel()+' '+prompt,{handler:handlerName,stream:true,openChat:false,parameters:sermonParams}).catch(function(err){
 var ldr3=document.getElementById('loader'+partNum);if(ldr3)ldr3.remove();
 partContainer.innerHTML='<div class="error-msg">'+escapeHtml(String(err))+'</div>';
 document.getElementById('generateBtn').disabled=false;
@@ -2955,7 +3012,10 @@ showToast('All '+sermonPartsRaw.length+' parts copied to clipboard!');
 }
 function copyAllSermonPlain(){
 if(!sermonPartsCombined){showToast('No sermon to copy.');return;}
-rawCopy(stripMarkdownForTTS(sermonPartsCombined),null);
+var text=sermonPartsCombined;
+if(sermonUsedWebResearch)text=stripMarkdownForTTS(stripMediaSources(text));
+else text=stripMarkdownForTTS(text);
+rawCopy(text,null);
 showToast('Copied as plain text (no markdown) -- ready for ElevenLabs!');
 }
 function exportSermon(){
@@ -3918,6 +3978,9 @@ p+='- ABSOLUTELY NO BRACKET TAGS OF ANY KIND. No [pause], [angry], [laughs], [wh
 p+='- No "Thinking..." or "Analyzing..." or "Let me consider..." preambles.\n';
 p+='- Do NOT mention word counts anywhere in the sermon. No "approximately 2,000 words" or "word count" or "I will write X words" or anything about length targets. The word count instruction is for YOUR guidance only -- it must NEVER appear in the output text.\n';
 p+='- Your VERY FIRST output must be the # title line, then '+openingInstruction+'. Nothing before the title. Zero preamble.\n';
+if(shouldSermonUseWebResearch()){
+p+=buildWebResearchPromptBlock(topic,chapterSrc);
+}
 return p;
 }
 /* ==========================================
@@ -4722,6 +4785,7 @@ text=sermonPartsCombined;
 var idx=parseInt(partVal)-1;
 if(sermonPartsRaw[idx])text=sermonPartsRaw[idx];
 }
+if(sermonUsedWebResearch)text=stripMarkdownForTTS(stripMediaSources(text));
 var btn=document.querySelector('#sermonActions .tts-btn');
 doTTS(text,voice,'ttsAudioWrap',btn);
 }
@@ -6133,13 +6197,7 @@ btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Destroying...';
 output.classList.add('visible');
 body.innerHTML='<div class="loading-state"><div class="loading-pulse"></div><div class="loading-text">'+(wantRoughBez?'Brother Bez is tearing this apart street preacher style...':'Yah is researching and destroying this media...')+'</div></div>';
 actions.style.display='none';
-var params={web_search:true};
-var modelLower=model.toLowerCase();
-if(modelLower.indexOf('gemini')!==-1&&modelLower.indexOf('flash')!==-1){
-params.thinking_level='minimal';
-}else if(modelLower.indexOf('gemini')!==-1){
-params.thinking_budget=0;
-}
+var params=getWebSearchParams(model);
 function generateMediaPart(partNum){
 if(partNum>selectedMediaParts){
 actions.style.display='flex';
