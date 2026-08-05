@@ -2490,7 +2490,7 @@ return stripSermonPreamble(text);
 function findPartHeaderIndices(text,partNum){
 var indices=[];
 if(!text)return indices;
-var re=new RegExp('^#\\s*(?:Part|PART|Episode|EPISODE)\\s*'+(partNum!=null?partNum+'\\s*':'\\d+\\s*')+'[\\-:]','gim');
+var re=new RegExp('#\\s*(?:Part|PART|Episode|EPISODE)\\s*'+(partNum!=null?partNum+'\\s*':'\\d+\\s*')+'[\\-:]','gi');
 var m;
 while((m=re.exec(text))!==null){
 if(indices.indexOf(m.index)===-1)indices.push(m.index);
@@ -2501,6 +2501,8 @@ return indices;
 function dedupeSermonPartContent(text,partNum){
 if(!text)return text;
 text=text.trim();
+// Normalize inline glued headers: "...heat.# Part 1:" -> newline before header
+text=text.replace(/(?<=\S)(#\s*Part\s*\d+\s*:)/gi,'\n\n$1');
 var indices=findPartHeaderIndices(text,partNum);
 if(indices.length>1){
 text=text.substring(0,indices[1]).trim();
