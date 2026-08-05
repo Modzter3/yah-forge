@@ -2698,6 +2698,66 @@ return (selectedPartCount===1?'Episode':'Part '+partNum);
 function hasLeadingMarkdownHeading(text){
 return /^\s*#\s+\S/.test(text||'');
 }
+function normalizeGluedPartHeaders(text){
+if(!text)return text;
+return text.replace(/(?<=\S)(#\s*Part\s*\d+\s*:)/gi,'\n\n$1');
+}
+function findPartHeaderIndices(text,partNum){
+var pat=new RegExp('#\\s*Part\\s*'+partNum+'\\s*:','gi');
+var matches=[];
+var m;
+while((m=pat.exec(text))!==null)matches.push(m.index);
+return matches;
+}
+function dedupeSermonPartContent(text,partNum){
+if(!text)return text;
+text=normalizeGluedPartHeaders(text.trim());
+var hashMatches=findPartHeaderIndices(text,partNum);
+if(!hashMatches.length)return text;
+var plainPat=new RegExp('(?:^|\\n)Part\\s*'+partNum+'\\s*:','i');
+var plainBefore=plainPat.test(text.slice(0,hashMatches[0]));
+var dupStart=-1;
+if(plainBefore)dupStart=hashMatches[0];
+else if(hashMatches.length>=2)dupStart=hashMatches[1];
+if(dupStart<0)return text;
+var dupEnd=text.length;
+if(partNum<selectedPartCount){
+var nextPat=new RegExp('(?:^|\\n)(?:---\\s*\\n+)?(?:#\\s*)?Part\\s*'+(partNum+1)+'\\s*:','im');
+var searchFrom=text.slice(dupStart+5);
+var nm=nextPat.exec(searchFrom);
+if(nm)dupEnd=dupStart+5+nm.index;
+}
+var kept=text.slice(0,dupStart).trim();
+var tail=dupEnd<text.length?text.slice(dupEnd).trim():'';
+return (kept+(tail?'\n\n'+tail:'')).replace(/\n{3,}/g,'\n\n').trim();
+}
+function dedupeMultipartSermonText(text){
+if(!text)return text;
+text=normalizeGluedPartHeaders(text.trim());
+for(var n=6;n>=1;n--){
+var hashPat=new RegExp('#\\s*Part\\s*'+n+'\\s*:','gi');
+var hashMatches=[];
+var m;
+while((m=hashPat.exec(text))!==null)hashMatches.push(m.index);
+if(!hashMatches.length)continue;
+var plainPat=new RegExp('(?:^|\\n)Part\\s*'+n+'\\s*:','i');
+var dupStart=-1;
+if(plainPat.test(text.slice(0,hashMatches[0])))dupStart=hashMatches[0];
+else if(hashMatches.length>=2)dupStart=hashMatches[1];
+else continue;
+var dupEnd=text.length;
+if(n<6){
+var nextPat=new RegExp('(?:^|\\n)Part\\s*'+(n+1)+'\\s*:','im');
+var nm=nextPat.exec(text.slice(dupStart+5));
+if(nm)dupEnd=dupStart+5+nm.index;
+}
+text=text.slice(0,dupStart).trim()+(dupEnd<text.length?'\n\n'+text.slice(dupEnd).trim():'');
+text=text.replace(/\n{3,}/g,'\n\n').trim();
+}
+return text;
+}
+var sermonAutoContinueCount=0;
+var SERMON_MAX_AUTO_CONTINUES=6;
 function generatePart(partNum){
 if(partNum>selectedPartCount){seriesComplete();return;}
 var output=document.getElementById('sermonOutput');
@@ -2722,46 +2782,77 @@ output.appendChild(loader);
 // Scroll to the loading indicator
 loader.scrollIntoView({behavior:'smooth',block:'center'});
 var prompt=buildPartPrompt(partNum);
-var handlerName='sermon-part-'+partNum+'-'+Date.now();
-var partContent='';
-var titleExtracted=false;
+var partAccumulated='';
+sermonAutoContinueCount=0;
+var isFinalSermonPart=(partNum===selectedPartCount);
+function finishSermonPart(partText){
+partText=dedupeSermonPartContent(partText,partNum);
+partContainer.innerHTML=marked.parse(partText);
+var extractedTitle=extractPartTitle(partText,partNum);
+sermonPartsTitles.push(extractedTitle);
+var ldr2=document.getElementById('loader'+partNum);if(ldr2)ldr2.remove();
+var div2=document.getElementById('partDivider'+partNum);if(div2)div2.remove();
+sermonPartsRaw.push(partText);
+updateProgress(partNum);
+generatePart(partNum+1);
+}
+function sendSermonPartMsg(promptText,isContinuation){
+var handlerName='sermon-part-'+partNum+'-'+(isContinuation?'c'+sermonAutoContinueCount+'-':'')+Date.now();
 window.Poe.registerHandler(handlerName,function(result){
 var msg=result.responses[0];if(!msg)return;
 if(msg.status==='error'){
 var ldr=document.getElementById('loader'+partNum);if(ldr)ldr.remove();
+if(partAccumulated){
+finishSermonPart(dedupeSermonPartContent(partAccumulated,partNum));
+}else{
 partContainer.innerHTML='<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> '+(selectedPartCount===1?'Episode':'Part '+partNum)+' failed: '+escapeHtml(msg.statusText||'Unknown error')+'</div>';
 document.getElementById('generateBtn').disabled=false;
 isGenerating=false;
+}
 }else if(msg.status==='incomplete'){
-partContent=stripSermonContent(msg.content||'');
-partContainer.innerHTML=marked.parse(partContent);
-// Extract title for internal tracking (title displays in the body heading)
-if(!titleExtracted&&partContent.length>40){
-var t=extractPartTitle(partContent,partNum);
-if(t!==(selectedPartCount===1?'Episode':'Part '+partNum)){
-titleExtracted=true;
-}
-}
+var chunk=stripSermonContent(msg.content||'');
+var display=isContinuation?(partAccumulated+'\n\n'+chunk):chunk;
+partContainer.innerHTML=marked.parse(dedupeSermonPartContent(display,partNum));
 }else if(msg.status==='complete'){
-partContent=stripSermonContent(msg.content||'');
-partContainer.innerHTML=marked.parse(partContent);
-var extractedTitle=extractPartTitle(partContent,partNum);
-sermonPartsTitles.push(extractedTitle);
-var ldr2=document.getElementById('loader'+partNum);if(ldr2)ldr2.remove();
-var div2=document.getElementById('partDivider'+partNum);if(div2)div2.remove();
-sermonPartsRaw.push(partContent);
-updateProgress(partNum);
-// Chain to next part
-generatePart(partNum+1);
+var chunk=stripSermonContent(msg.content||'');
+partAccumulated=isContinuation?(partAccumulated+'\n\n'+chunk):chunk;
+partAccumulated=dedupeSermonPartContent(partAccumulated,partNum);
+partContainer.innerHTML=marked.parse(partAccumulated);
+var cutOff=dismantleLooksIncomplete(partAccumulated);
+if(cutOff&&sermonAutoContinueCount<SERMON_MAX_AUTO_CONTINUES){
+sermonAutoContinueCount++;
+var segLabel=selectedPartCount===1?'segment':'Part '+partNum;
+var loader=document.getElementById('loader'+partNum);
+if(loader)loader.querySelector('.loading-text').textContent='Continuing '+segLabel+' ('+sermonAutoContinueCount+'/'+SERMON_MAX_AUTO_CONTINUES+')...';
+var isLastContinue=(sermonAutoContinueCount===SERMON_MAX_AUTO_CONTINUES);
+var contPrompt;
+if(isLastContinue&&isFinalSermonPart){
+contPrompt='FINAL SEGMENT -- Continue EXACTLY where you left off, then deliver a strong closing warning. Do NOT repeat prior material, titles, intros, or headers.\n\n"...'+partAccumulated.slice(-300)+'"\n\nCONTINUE AND CLOSE NOW:';
+}else if(cutOff){
+contPrompt='Continue EXACTLY where you left off. Do NOT repeat anything you already wrote. Do NOT restart the part. Do NOT reprint the # Part '+partNum+' header. Just pick up mid-sentence and keep going.\n\n"...'+partAccumulated.slice(-300)+'"\n\nCONTINUE NOW:';
+}else{
+contPrompt='You finished a section but this part is not done yet. Go DEEPER with NEW material. Do NOT repeat what you already wrote. Do NOT summarize. Do NOT reprint headers.\n\n"...'+partAccumulated.slice(-300)+'"\n\nCONTINUE WITH NEW MATERIAL NOW:';
+}
+sendSermonPartMsg(contPrompt,true);
+}else{
+if(cutOff)showToast('Reached model output limit — ending may be abrupt.');
+finishSermonPart(partAccumulated);
+}
 }
 });
 var sermonParams=sermonUsedWebResearch?getWebSearchParams(getSelectedModel()):{};
-window.Poe.sendUserMessage('@'+getSelectedModel()+' '+prompt,{handler:handlerName,stream:true,openChat:false,parameters:sermonParams}).catch(function(err){
+window.Poe.sendUserMessage('@'+getSelectedModel()+' '+promptText,{handler:handlerName,stream:true,openChat:false,parameters:sermonParams}).catch(function(err){
 var ldr3=document.getElementById('loader'+partNum);if(ldr3)ldr3.remove();
+if(partAccumulated){
+finishSermonPart(dedupeSermonPartContent(partAccumulated,partNum));
+}else{
 partContainer.innerHTML='<div class="error-msg">'+escapeHtml(String(err))+'</div>';
 document.getElementById('generateBtn').disabled=false;
 isGenerating=false;
+}
 });
+}
+sendSermonPartMsg(prompt,false);
 }
 /* ==========================================
 HIDDEN THREADS -- Deep rabbit holes
@@ -2999,13 +3090,14 @@ document.getElementById('ttsAudioWrap').innerHTML='';
 sermonPartsCombined='';
 for(var i=0;i<sermonPartsRaw.length;i++){
 var pTitle=sermonPartsTitles[i]||('Part '+(i+1));
-var rawPart=(sermonPartsRaw[i]||'').trim();
+var rawPart=dedupeSermonPartContent((sermonPartsRaw[i]||'').trim(),i+1);
 if(hasLeadingMarkdownHeading(rawPart)){
 sermonPartsCombined+=rawPart+'\n\n---\n\n';
 }else{
 sermonPartsCombined+=sermonPartsRaw.length===1?'# '+pTitle+'\n\n'+rawPart+'\n\n---\n\n':'# Part '+(i+1)+': '+pTitle+'\n\n'+rawPart+'\n\n---\n\n';
 }
 }
+sermonPartsCombined=dedupeMultipartSermonText(sermonPartsCombined);
 // Auto-save to library
 if(currentTopic&&sermonPartsRaw.length===selectedPartCount){
 saveToLibrary(
@@ -3114,7 +3206,11 @@ if(partNum>1){
 p+='The listener has already heard Parts 1 through '+(partNum-1)+'. This is a CONTINUATION of the same '+(wantRoughBez?'sermon':'episode')+' -- NOT a new '+(wantRoughBez?'sermon':'episode')+'. ';
 }
 }
-p+='You MUST write approximately '+wordsPerPart.toLocaleString()+' words for this '+(totalParts===1?(wantRoughBez?'sermon':'episode'):'part')+' (the full '+(totalParts===1?(wantRoughBez?'sermon':'episode'):(wantRoughBez?'sermon across all parts':'episode across all parts'))+' targets ~'+totalWords.toLocaleString()+' words total). Do NOT cut short. Fill the full '+wordsPerPart.toLocaleString()+' words.\n\n';
+p+='You MUST write approximately '+wordsPerPart.toLocaleString()+' words for this '+(totalParts===1?(wantRoughBez?'sermon':'episode'):'part')+' (the full '+(totalParts===1?(wantRoughBez?'sermon':'episode'):(wantRoughBez?'sermon across all parts':'episode across all parts'))+' targets ~'+totalWords.toLocaleString()+' words total). Do NOT cut short. Fill the full '+wordsPerPart.toLocaleString()+' words.\n';
+if(totalParts>1){
+p+='ANTI-DUPLICATION -- NON-NEGOTIABLE: Write each section ONCE only. Do NOT repeat the part title, intro, opening paragraphs, episode breakdowns, or closing lines. If you already covered an episode or scripture point, move forward -- never restart the part from the top. One # Part '+partNum+' header only.\n';
+}
+p+='\n';
 if(wantIsraelite&&wantRoughBez){
 // ROUGH BEZALEEL MODE -- no broadcast format, no welcome/backdrop
 if(totalParts===1){
