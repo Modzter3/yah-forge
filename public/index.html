@@ -1659,6 +1659,7 @@ var currentNewsContext=null;
 var currentThreadsContext=null;
 function recommendPartCount(topic,mode){
 if(!topic)return 3;
+if(looksLikeTvSeason(topic.title))return 6;
 if(mode==='threads'&&currentThreadsContext){
 // Scale parts based on thread count
 var tc=currentThreadsContext.length;
@@ -2736,10 +2737,32 @@ var kept=text.slice(0,dupStart).trim();
 var tail=dupEnd<text.length?text.slice(dupEnd).trim():'';
 return (kept+(tail?'\n\n'+tail:'')).replace(/\n{3,}/g,'\n\n').trim();
 }
+function trimPartForContext(text,maxChars){
+if(!text)return text;
+text=text.trim();
+if(text.length<=maxChars)return text;
+return '...[earlier content truncated for length]...\n\n'+text.slice(-maxChars);
+}
+function truncateSermonPartAtBoundary(text,partNum){
+if(!text||partNum>=selectedPartCount)return text;
+text=normalizeGluedPartHeaders(text.trim());
+var nextNum=partNum+1;
+for(var n=nextNum;n<=selectedPartCount;n++){
+var nextPat=new RegExp('(?:^|\\n)(?:---\\s*\\n+)?#?\\s*Part\\s*'+n+'\\s*:','im');
+var m=nextPat.exec(text);
+if(m)return text.slice(0,m.index).trim();
+}
+return text;
+}
+function finalizeSermonPartText(text,partNum){
+return truncateSermonPartAtBoundary(dedupeSermonPartContent(text,partNum),partNum);
+}
+var SERMON_STREAM_INITIAL_TIMEOUT_MS=300000;
+var SERMON_STREAM_STALL_TIMEOUT_MS=120000;
 function dedupeMultipartSermonText(text){
 if(!text)return text;
 text=normalizeGluedPartHeaders(text.trim());
-for(var n=6;n>=1;n--){
+for(var n=selectedPartCount;n>=1;n--){
 var hashPat=new RegExp('#\\s*Part\\s*'+n+'\\s*:','gi');
 var hashMatches=[];
 var m;
@@ -2751,7 +2774,7 @@ if(plainPat.test(text.slice(0,hashMatches[0])))dupStart=hashMatches[0];
 else if(hashMatches.length>=2)dupStart=hashMatches[1];
 else continue;
 var dupEnd=text.length;
-if(n<6){
+if(n<selectedPartCount){
 var nextPat=new RegExp('(?:^|\\n)Part\\s*'+(n+1)+'\\s*:','im');
 var nm=nextPat.exec(text.slice(dupStart+5));
 if(nm)dupEnd=dupStart+5+nm.index;
@@ -2782,7 +2805,7 @@ output.appendChild(partContainer);
 var loader=document.createElement('div');
 loader.className='loading-state';
 loader.id='loader'+partNum;
-loader.innerHTML='<div class="loading-pulse"></div><div class="loading-text">Forging '+(selectedPartCount===1?'Episode':'Part '+partNum+' of '+selectedPartCount)+'...</div>';
+loader.innerHTML='<div class="loading-pulse"></div><div class="loading-text">Forging '+(selectedPartCount===1?'Episode':'Part '+partNum+' of '+selectedPartCount)+'...</div><button type="button" class="vc-btn cancel" style="margin-top:10px;font-size:0.72rem;" onclick="forceAdvanceSermonPart('+partNum+')"><i class="fas fa-forward" style="margin-right:4px;"></i>Stuck? Force next part</button>';
 output.appendChild(loader);
 // Scroll to the loading indicator
 loader.scrollIntoView({behavior:'smooth',block:'center'});
@@ -2790,53 +2813,111 @@ var prompt=buildPartPrompt(partNum);
 var partAccumulated='';
 sermonAutoContinueCount=0;
 var isFinalSermonPart=(partNum===selectedPartCount);
-function finishSermonPart(partText){
-partText=dedupeSermonPartContent(partText,partNum);
+var streamWatchdog=null;
+var hasStreamContent=false;
+function clearStreamWatchdog(){
+if(streamWatchdog){clearTimeout(streamWatchdog);streamWatchdog=null;}
+}
+function armStreamWatchdog(){
+clearStreamWatchdog();
+var timeoutMs=hasStreamContent?SERMON_STREAM_STALL_TIMEOUT_MS:SERMON_STREAM_INITIAL_TIMEOUT_MS;
+streamWatchdog=setTimeout(function(){
+clearStreamWatchdog();
+if(partAccumulated){
+showToast('No response for a while — saving this part and moving on.');
+finishSermonPart(finalizeSermonPartText(partAccumulated,partNum),true);
+}else{
+var ldr=document.getElementById('loader'+partNum);if(ldr)ldr.remove();
+partContainer.innerHTML='<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> '+(selectedPartCount===1?'Episode':'Part '+partNum)+' timed out (model may still be searching). Try a faster bot or tap Force next part.</div>';
+document.getElementById('generateBtn').disabled=false;
+isGenerating=false;
+}
+},timeoutMs);
+}
+function removePartLoader(){
+var ldr=document.getElementById('loader'+partNum);if(ldr)ldr.remove();
+}
+function finishSermonPart(partText,fromWatchdog){
+clearStreamWatchdog();
+partText=finalizeSermonPartText(partText,partNum);
 partContainer.innerHTML=marked.parse(partText);
 var extractedTitle=extractPartTitle(partText,partNum);
 sermonPartsTitles.push(extractedTitle);
-var ldr2=document.getElementById('loader'+partNum);if(ldr2)ldr2.remove();
+removePartLoader();
 var div2=document.getElementById('partDivider'+partNum);if(div2)div2.remove();
 sermonPartsRaw.push(partText);
 updateProgress(partNum);
+if(fromWatchdog&&partNum<selectedPartCount){
+showToast('Moving to Part '+(partNum+1)+'...');
+}
 generatePart(partNum+1);
 }
+window.forceAdvanceSermonPart=function(forcePartNum){
+if(!isGenerating)return;
+if(forcePartNum!==partNum)return;
+clearStreamWatchdog();
+if(partAccumulated){
+finishSermonPart(finalizeSermonPartText(partAccumulated,forcePartNum),true);
+}else{
+removePartLoader();
+sermonPartsRaw.push('');
+sermonPartsTitles.push('Part '+forcePartNum);
+updateProgress(forcePartNum);
+generatePart(forcePartNum+1);
+}
+};
 function sendSermonPartMsg(promptText,isContinuation){
+armStreamWatchdog();
 var handlerName='sermon-part-'+partNum+'-'+(isContinuation?'c'+sermonAutoContinueCount+'-':'')+Date.now();
 window.Poe.registerHandler(handlerName,function(result){
 var msg=result.responses[0];if(!msg)return;
 if(msg.status==='error'){
-var ldr=document.getElementById('loader'+partNum);if(ldr)ldr.remove();
+clearStreamWatchdog();
+removePartLoader();
 if(partAccumulated){
-finishSermonPart(dedupeSermonPartContent(partAccumulated,partNum));
+finishSermonPart(finalizeSermonPartText(partAccumulated,partNum));
 }else{
 partContainer.innerHTML='<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> '+(selectedPartCount===1?'Episode':'Part '+partNum)+' failed: '+escapeHtml(msg.statusText||'Unknown error')+'</div>';
 document.getElementById('generateBtn').disabled=false;
 isGenerating=false;
 }
 }else if(msg.status==='incomplete'){
+hasStreamContent=true;
+armStreamWatchdog();
+removePartLoader();
 var chunk=stripSermonContent(msg.content||'');
 var display=isContinuation?(partAccumulated+'\n\n'+chunk):chunk;
-partContainer.innerHTML=marked.parse(dedupeSermonPartContent(display,partNum));
+partContainer.innerHTML=marked.parse(finalizeSermonPartText(display,partNum));
 }else if(msg.status==='complete'){
+hasStreamContent=true;
+clearStreamWatchdog();
 var chunk=stripSermonContent(msg.content||'');
 partAccumulated=isContinuation?(partAccumulated+'\n\n'+chunk):chunk;
-partAccumulated=dedupeSermonPartContent(partAccumulated,partNum);
+partAccumulated=finalizeSermonPartText(partAccumulated,partNum);
+removePartLoader();
 partContainer.innerHTML=marked.parse(partAccumulated);
 var cutOff=dismantleLooksIncomplete(partAccumulated);
 if(cutOff&&sermonAutoContinueCount<SERMON_MAX_AUTO_CONTINUES){
 sermonAutoContinueCount++;
 var segLabel=selectedPartCount===1?'segment':'Part '+partNum;
-var loader=document.getElementById('loader'+partNum);
-if(loader)loader.querySelector('.loading-text').textContent='Continuing '+segLabel+' ('+sermonAutoContinueCount+'/'+SERMON_MAX_AUTO_CONTINUES+')...';
+var loaderEl=document.getElementById('loader'+partNum);
+if(!loaderEl){
+loaderEl=document.createElement('div');
+loaderEl.className='loading-state';
+loaderEl.id='loader'+partNum;
+loaderEl.innerHTML='<div class="loading-pulse"></div><div class="loading-text">Continuing '+segLabel+' ('+sermonAutoContinueCount+'/'+SERMON_MAX_AUTO_CONTINUES+')...</div>';
+output.appendChild(loaderEl);
+}else{
+loaderEl.querySelector('.loading-text').textContent='Continuing '+segLabel+' ('+sermonAutoContinueCount+'/'+SERMON_MAX_AUTO_CONTINUES+')...';
+}
 var isLastContinue=(sermonAutoContinueCount===SERMON_MAX_AUTO_CONTINUES);
 var contPrompt;
 if(isLastContinue&&isFinalSermonPart){
-contPrompt='FINAL SEGMENT -- Continue EXACTLY where you left off, then deliver a strong closing warning. Do NOT repeat prior material, titles, intros, or headers.\n\n"...'+partAccumulated.slice(-300)+'"\n\nCONTINUE AND CLOSE NOW:';
+contPrompt='FINAL SEGMENT -- Continue EXACTLY where you left off, then deliver a strong closing warning. Do NOT repeat prior material, titles, intros, or headers. Do NOT start Part '+(partNum+1)+' or any later part.\n\n"...'+partAccumulated.slice(-300)+'"\n\nCONTINUE AND CLOSE NOW:';
 }else if(cutOff){
-contPrompt='Continue EXACTLY where you left off. Do NOT repeat anything you already wrote. Do NOT restart the part. Do NOT reprint the # Part '+partNum+' header. Just pick up mid-sentence and keep going.\n\n"...'+partAccumulated.slice(-300)+'"\n\nCONTINUE NOW:';
+contPrompt='Continue EXACTLY where you left off. Do NOT repeat anything you already wrote. Do NOT restart the part. Do NOT reprint the # Part '+partNum+' header. Do NOT write Part '+(partNum+1)+' or later parts -- ONLY finish THIS part. Just pick up mid-sentence and keep going.\n\n"...'+partAccumulated.slice(-300)+'"\n\nCONTINUE NOW:';
 }else{
-contPrompt='You finished a section but this part is not done yet. Go DEEPER with NEW material. Do NOT repeat what you already wrote. Do NOT summarize. Do NOT reprint headers.\n\n"...'+partAccumulated.slice(-300)+'"\n\nCONTINUE WITH NEW MATERIAL NOW:';
+contPrompt='You finished a section but this part is not done yet. Go DEEPER with NEW material. Do NOT repeat what you already wrote. Do NOT summarize. Do NOT reprint headers. Do NOT start Part '+(partNum+1)+'.\n\n"...'+partAccumulated.slice(-300)+'"\n\nCONTINUE WITH NEW MATERIAL NOW:';
 }
 sendSermonPartMsg(contPrompt,true);
 }else{
@@ -2847,9 +2928,10 @@ finishSermonPart(partAccumulated);
 });
 var sermonParams=sermonUsedWebResearch?getWebSearchParams(getSelectedModel()):{};
 window.Poe.sendUserMessage('@'+getSelectedModel()+' '+promptText,{handler:handlerName,stream:true,openChat:false,parameters:sermonParams}).catch(function(err){
-var ldr3=document.getElementById('loader'+partNum);if(ldr3)ldr3.remove();
+clearStreamWatchdog();
+removePartLoader();
 if(partAccumulated){
-finishSermonPart(dedupeSermonPartContent(partAccumulated,partNum));
+finishSermonPart(finalizeSermonPartText(partAccumulated,partNum));
 }else{
 partContainer.innerHTML='<div class="error-msg">'+escapeHtml(String(err))+'</div>';
 document.getElementById('generateBtn').disabled=false;
@@ -3095,7 +3177,7 @@ document.getElementById('ttsAudioWrap').innerHTML='';
 sermonPartsCombined='';
 for(var i=0;i<sermonPartsRaw.length;i++){
 var pTitle=sermonPartsTitles[i]||('Part '+(i+1));
-var rawPart=dedupeSermonPartContent((sermonPartsRaw[i]||'').trim(),i+1);
+var rawPart=finalizeSermonPartText((sermonPartsRaw[i]||'').trim(),i+1);
 if(hasLeadingMarkdownHeading(rawPart)){
 sermonPartsCombined+=rawPart+'\n\n---\n\n';
 }else{
@@ -3214,6 +3296,7 @@ p+='The listener has already heard Parts 1 through '+(partNum-1)+'. This is a CO
 p+='You MUST write approximately '+wordsPerPart.toLocaleString()+' words for this '+(totalParts===1?(wantRoughBez?'sermon':'episode'):'part')+' (the full '+(totalParts===1?(wantRoughBez?'sermon':'episode'):(wantRoughBez?'sermon across all parts':'episode across all parts'))+' targets ~'+totalWords.toLocaleString()+' words total). Do NOT cut short. Fill the full '+wordsPerPart.toLocaleString()+' words.\n';
 if(totalParts>1){
 p+='ANTI-DUPLICATION -- NON-NEGOTIABLE: Write each section ONCE only. Do NOT repeat the part title, intro, opening paragraphs, episode breakdowns, or closing lines. If you already covered an episode or scripture point, move forward -- never restart the part from the top. One # Part '+partNum+' header only.\n';
+p+='ONE PART ONLY -- CRITICAL: You are writing ONLY Part '+partNum+' of '+totalParts+'. Do NOT write Part '+(partNum+1)+' or any later part in this response. When you finish your assigned content for THIS part, STOP. The app will request Part '+(partNum+1)+' separately.\n';
 }
 p+='\n';
 if(wantIsraelite&&wantRoughBez){
@@ -3633,7 +3716,7 @@ p+='Below is the COMPLETE text of every part written so far. You MUST read all o
 for(var i=0;i<partNum-1;i++){
 var prevTitle=sermonPartsTitles[i]||SERIES_PARTS[i].title;
 p+='--- PART '+(i+1)+': '+prevTitle+' ---\n';
-p+=(sermonPartsRaw[i]||'[content unavailable]')+'\n';
+p+=trimPartForContext(sermonPartsRaw[i]||'[content unavailable]',partNum<=3?3500:2000)+'\n';
 p+='--- END PART '+(i+1)+' ---\n\n';
 }
 p+='============================================================\n';
@@ -6231,7 +6314,8 @@ p+='- FINAL PART: cover the LAST chunk through the season finale. '+followVerb.c
 p+='- Middle part: cover ONLY your assigned middle chunk. One sentence bridge MAX, then start on the next episode immediately.\n';
 }
 p+='- Open with a line stating which episodes you are covering (e.g. "Episodes 4 through 6"), then '+followVerb+' EACH in order with its own ## Episode N header.\n';
-p+='- Do NOT touch episodes assigned to other parts. Do NOT recap prior episodes beyond one sentence.\n\n';
+p+='- Do NOT touch episodes assigned to other parts. Do NOT recap prior episodes beyond one sentence.\n';
+p+='- HARD STOP: When you finish the LAST episode assigned to Part '+currentPart+', STOP IMMEDIATELY. Do NOT write "# Part '+(currentPart+1)+'" or any later part header. Do NOT start the next episode. The next part will be generated in a separate request.\n\n';
 }else{
 p+='STEP 3 -- SINGLE PART:\n';
 p+='Cover EVERY episode from Episode 1 through the finale. Each gets ## Episode N with full plot exposure AND '+followUp+'. No episode left behind.\n\n';

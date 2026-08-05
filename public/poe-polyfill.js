@@ -104,21 +104,41 @@
   async function callPoeStreaming(bot, prompt, parameters, handlerFn) {
     const res = await openStream(bot, prompt, parameters);
     let text = '';
+    let finished = false;
+    let streamError = null;
 
-    for await (const raw of readSse(res.body)) {
-      if (raw === '[DONE]') break;
-      let parsed;
-      try { parsed = JSON.parse(raw); } catch { continue; }
-      if (parsed.error) throw new Error(parsed.error.message || parsed.error);
-      const delta = deltaText(parsed);
-      if (delta) {
-        text += delta;
-        handlerFn(wrap('incomplete', text, []));
+    try {
+      for await (const raw of readSse(res.body)) {
+        if (raw === '[DONE]') break;
+        let parsed;
+        try { parsed = JSON.parse(raw); } catch { continue; }
+        if (parsed.error) {
+          streamError = new Error(parsed.error.message || parsed.error);
+          break;
+        }
+        const delta = deltaText(parsed);
+        if (delta) {
+          text += delta;
+          handlerFn(wrap('incomplete', text, []));
+        }
+        if (isFinished(parsed)) {
+          finished = true;
+          break;
+        }
       }
-      if (isFinished(parsed)) break;
+    } catch (err) {
+      streamError = err;
     }
 
-    handlerFn(wrap('complete', text, []));
+    if (streamError) {
+      if (text) handlerFn(wrap('complete', text, []));
+      else handlerFn(wrap('error', '', [], streamError.message || String(streamError)));
+      return;
+    }
+
+    if (!finished && text) handlerFn(wrap('complete', text, []));
+    else if (!finished) handlerFn(wrap('error', '', [], 'Stream ended without a response'));
+    else handlerFn(wrap('complete', text, []));
   }
 
   // ── Public API ────────────────────────────────────────────────
