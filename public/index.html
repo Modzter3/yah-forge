@@ -2487,6 +2487,73 @@ function stripSermonContent(text){
 if(sermonUsedWebResearch)return stripMediaSources(text);
 return stripSermonPreamble(text);
 }
+function findPartHeaderIndices(text,partNum){
+var indices=[];
+if(!text)return indices;
+var re=new RegExp('#\\s*(?:Part|PART|Episode|EPISODE)\\s*'+(partNum!=null?partNum+'\\s*':'\\d+\\s*')+'[\\-:]','gi');
+var m;
+while((m=re.exec(text))!==null){
+if(indices.indexOf(m.index)===-1)indices.push(m.index);
+}
+indices.sort(function(a,b){return a-b;});
+return indices;
+}
+function dedupeSermonPartContent(text,partNum){
+if(!text)return text;
+text=text.trim();
+// Normalize inline glued headers: "...heat.# Part 1:" -> newline before header
+text=text.replace(/(?<=\S)(#\s*Part\s*\d+\s*:)/gi,'\n\n$1');
+var indices=findPartHeaderIndices(text,partNum);
+if(indices.length>1){
+text=text.substring(0,indices[1]).trim();
+}
+if(partNum&&partNum>0){
+var plainRe=new RegExp('(?:^|\\n)Part\\s+'+partNum+'\\s*[\\-:][^\\n]+','gi');
+var plainMatches=[];
+var pm;
+while((pm=plainRe.exec(text))!==null){plainMatches.push(pm.index);}
+if(plainMatches.length>1){
+text=text.substring(0,plainMatches[1]).trim();
+}
+}
+if(text.length>800){
+var norm=function(s){return s.replace(/\s+/g,' ').trim().toLowerCase();};
+var sampleLen=Math.min(280,text.length);
+var opener=norm(text.substring(0,sampleLen));
+var searchFrom=Math.floor(text.length*0.35);
+var rest=norm(text.substring(searchFrom));
+var needle=opener.substring(0,Math.min(120,opener.length));
+var pos=rest.indexOf(needle);
+if(pos>=0){
+var cutAt=searchFrom+pos;
+if(cutAt>sampleLen+100){text=text.substring(0,cutAt).trim();}
+}
+}
+return text;
+}
+function mergeSermonContinuation(accumulated,chunk){
+if(!accumulated)return chunk||'';
+if(!chunk)return accumulated;
+var a=accumulated.trim();
+var c=chunk.trim();
+if(!c)return a;
+if(c===a)return a;
+if(c.startsWith(a))return c;
+if(a.startsWith(c))return a;
+var aHeader=a.match(/^#\s*(?:Part|PART|Episode|EPISODE)\s*\d+/im);
+var cHeader=c.match(/^#\s*(?:Part|PART|Episode|EPISODE)\s*\d+/im);
+if(aHeader&&cHeader&&aHeader[0].toLowerCase()===cHeader[0].toLowerCase()&&c.length>=a.length){
+return c;
+}
+var maxOverlap=Math.min(500,a.length,c.length);
+for(var len=maxOverlap;len>=80;len--){
+if(a.slice(-len)===c.slice(0,len)){return a+c.slice(len);}
+}
+return a+'\n\n'+c;
+}
+var sermonAutoContinueCount=0;
+var SERMON_MAX_AUTO_CONTINUES=6;
+var sermonLooksIncomplete=dismantleLooksIncomplete;
 function buildWebResearchPromptBlock(topic,chapterSrc){
 var p='\n*** LIVE WEB RESEARCH -- MANDATORY SILENT BACKGROUND USE ***\n';
 p+='Before you write, you MUST use your web search tool to research THIS topic. The search is for YOUR knowledge only -- the output must NEVER look like a research report.\n\n';
@@ -2721,47 +2788,84 @@ loader.innerHTML='<div class="loading-pulse"></div><div class="loading-text">For
 output.appendChild(loader);
 // Scroll to the loading indicator
 loader.scrollIntoView({behavior:'smooth',block:'center'});
-var prompt=buildPartPrompt(partNum);
-var handlerName='sermon-part-'+partNum+'-'+Date.now();
-var partContent='';
-var titleExtracted=false;
+var basePrompt=buildPartPrompt(partNum);
+var partAccumulated='';
+sermonAutoContinueCount=0;
+var isFinalPart=(partNum===selectedPartCount);
+function finishSermonPart(partText){
+partText=dedupeSermonPartContent(partText,partNum);
+var extractedTitle=extractPartTitle(partText,partNum);
+sermonPartsTitles.push(extractedTitle);
+var ldr2=document.getElementById('loader'+partNum);if(ldr2)ldr2.remove();
+var div2=document.getElementById('partDivider'+partNum);if(div2)div2.remove();
+partContainer.innerHTML=marked.parse(partText);
+sermonPartsRaw.push(partText);
+updateProgress(partNum);
+generatePart(partNum+1);
+}
+function sendSermonPartMsg(promptText,isContinuation){
+var handlerName='sermon-part-'+partNum+'-'+(isContinuation?'c'+sermonAutoContinueCount+'-':'')+Date.now();
 window.Poe.registerHandler(handlerName,function(result){
 var msg=result.responses[0];if(!msg)return;
 if(msg.status==='error'){
 var ldr=document.getElementById('loader'+partNum);if(ldr)ldr.remove();
+if(partAccumulated){
+partAccumulated=dedupeSermonPartContent(partAccumulated,partNum);
+partContainer.innerHTML=marked.parse(partAccumulated);
+sermonPartsTitles.push(extractPartTitle(partAccumulated,partNum));
+sermonPartsRaw.push(partAccumulated);
+updateProgress(partNum);
+generatePart(partNum+1);
+}else{
 partContainer.innerHTML='<div class="error-msg"><i class="fas fa-exclamation-triangle"></i> '+(selectedPartCount===1?'Episode':'Part '+partNum)+' failed: '+escapeHtml(msg.statusText||'Unknown error')+'</div>';
 document.getElementById('generateBtn').disabled=false;
 isGenerating=false;
+}
 }else if(msg.status==='incomplete'){
-partContent=stripSermonContent(msg.content||'');
-partContainer.innerHTML=marked.parse(partContent);
-// Extract title for internal tracking (title displays in the body heading)
-if(!titleExtracted&&partContent.length>40){
-var t=extractPartTitle(partContent,partNum);
-if(t!==(selectedPartCount===1?'Episode':'Part '+partNum)){
-titleExtracted=true;
-}
-}
+var chunk=stripSermonContent(msg.content||'');
+partAccumulated=isContinuation?mergeSermonContinuation(partAccumulated,chunk):chunk;
+partContainer.innerHTML=marked.parse(partAccumulated);
 }else if(msg.status==='complete'){
-partContent=stripSermonContent(msg.content||'');
-partContainer.innerHTML=marked.parse(partContent);
-var extractedTitle=extractPartTitle(partContent,partNum);
-sermonPartsTitles.push(extractedTitle);
-var ldr2=document.getElementById('loader'+partNum);if(ldr2)ldr2.remove();
-var div2=document.getElementById('partDivider'+partNum);if(div2)div2.remove();
-sermonPartsRaw.push(partContent);
-updateProgress(partNum);
-// Chain to next part
-generatePart(partNum+1);
+var chunk=stripSermonContent(msg.content||'');
+partAccumulated=isContinuation?mergeSermonContinuation(partAccumulated,chunk):chunk;
+partAccumulated=dedupeSermonPartContent(partAccumulated,partNum);
+partContainer.innerHTML=marked.parse(partAccumulated);
+var cutOff=sermonLooksIncomplete(partAccumulated);
+if(cutOff&&sermonAutoContinueCount<SERMON_MAX_AUTO_CONTINUES){
+sermonAutoContinueCount++;
+var loaderEl=document.getElementById('loader'+partNum);
+if(loaderEl){
+loaderEl.querySelector('.loading-text').textContent='Continuing '+(selectedPartCount===1?'episode':'Part '+partNum)+' ('+sermonAutoContinueCount+'/'+SERMON_MAX_AUTO_CONTINUES+')...';
+}
+var contPrompt;
+var isLastContinue=(sermonAutoContinueCount===SERMON_MAX_AUTO_CONTINUES);
+if(isLastContinue&&isFinalPart){
+contPrompt='FINAL SEGMENT for this part -- Continue EXACTLY where you left off, then close this part cleanly. Do NOT leave sentences hanging. Do NOT repeat the # Part title, intro, episodes, or any prior paragraphs. Pick up mid-sentence if needed.\n\n"...'+partAccumulated.slice(-300)+'"\n\nCONTINUE AND CLOSE THIS PART NOW:';
+}else if(cutOff){
+contPrompt=(sermonEpisodeModeActive?'Stay in EPISODE-BY-EPISODE mode. Finish the current episode or start the next assigned episode.\n\n':'')+'Continue EXACTLY where you left off. Do NOT repeat the part title, intro, or anything already written. Do NOT restart from the beginning. No second # Part header. Pick up mid-sentence or mid-section.\n\n"...'+partAccumulated.slice(-300)+'"\n\nCONTINUE NOW:';
+}else{
+contPrompt=(sermonEpisodeModeActive?'Stay in EPISODE-BY-EPISODE mode. Move to the next assigned episode.\n\n':'')+'This part needs more depth. Go further -- do NOT repeat title, intro, or prior material. Do NOT output a second # Part header. Here is where you stopped:\n\n"...'+partAccumulated.slice(-300)+'"\n\nCONTINUE WITH NEW MATERIAL NOW:';
+}
+sendSermonPartMsg(contPrompt,true);
+}else{
+if(cutOff){showToast('Reached model output limit — part '+partNum+' ending may be abrupt.');}
+finishSermonPart(partAccumulated);
+}
 }
 });
 var sermonParams=sermonUsedWebResearch?getWebSearchParams(getSelectedModel()):{};
-window.Poe.sendUserMessage('@'+getSelectedModel()+' '+prompt,{handler:handlerName,stream:true,openChat:false,parameters:sermonParams}).catch(function(err){
+window.Poe.sendUserMessage('@'+getSelectedModel()+' '+promptText,{handler:handlerName,stream:true,openChat:false,parameters:sermonParams}).catch(function(err){
 var ldr3=document.getElementById('loader'+partNum);if(ldr3)ldr3.remove();
+if(partAccumulated){
+finishSermonPart(partAccumulated);
+}else{
 partContainer.innerHTML='<div class="error-msg">'+escapeHtml(String(err))+'</div>';
 document.getElementById('generateBtn').disabled=false;
 isGenerating=false;
+}
 });
+}
+sendSermonPartMsg(basePrompt,false);
 }
 /* ==========================================
 HIDDEN THREADS -- Deep rabbit holes
@@ -2999,7 +3103,7 @@ document.getElementById('ttsAudioWrap').innerHTML='';
 sermonPartsCombined='';
 for(var i=0;i<sermonPartsRaw.length;i++){
 var pTitle=sermonPartsTitles[i]||('Part '+(i+1));
-var rawPart=(sermonPartsRaw[i]||'').trim();
+var rawPart=dedupeSermonPartContent((sermonPartsRaw[i]||'').trim(),i+1);
 if(hasLeadingMarkdownHeading(rawPart)){
 sermonPartsCombined+=rawPart+'\n\n---\n\n';
 }else{
@@ -3997,6 +4101,7 @@ p+='- No [Thinking] or [Internal reasoning] bracket blocks.\n';
 p+='- ABSOLUTELY NO BRACKET TAGS OF ANY KIND. No [pause], [angry], [laughs], [whispers], [scoffs], [sighs], [booming], [dramatic tone], or ANY text inside square brackets that acts as a stage direction, emotion cue, or sound effect. Square brackets are ONLY permitted for actual content like [citation] references. If you include even ONE bracket stage direction tag, the ENTIRE output is ruined. This is a written document, not a voice script.\n';
 p+='- No "Thinking..." or "Analyzing..." or "Let me consider..." preambles.\n';
 p+='- Do NOT mention word counts anywhere in the sermon. No "approximately 2,000 words" or "word count" or "I will write X words" or anything about length targets. The word count instruction is for YOUR guidance only -- it must NEVER appear in the output text.\n';
+p+='- Output this '+(totalParts===1?(wantRoughBez?'sermon':'episode'):'part')+' EXACTLY ONCE. Do NOT repeat the # title line, opening hook, intro, or any section you already wrote. If you need more length, keep going forward -- NEVER restart from the top with a second # Part or # Episode header.\n';
 p+='- Your VERY FIRST output must be the # title line, then '+openingInstruction+'. Nothing before the title. Zero preamble.\n';
 if(sermonEpisodeModeActive){
 p+=buildEpisodeModeBlock(topic.title,partNum,totalParts,wantRoughBez,'sermon');
@@ -6361,6 +6466,7 @@ var partAccumulated='';
 mediaAutoContinueCount=0;
 var isFinalPart=(partNum===selectedMediaParts);
 function finishMediaPart(partText){
+partText=dedupeSermonPartContent(partText,partNum);
 var ldr=document.getElementById('mediaLoader'+partNum);if(ldr)ldr.remove();
 if(partNum===1){
 mediaRawResult=partText;
@@ -6388,11 +6494,12 @@ btn.disabled=false;
 btn.innerHTML='<i class="fas fa-film"></i> Destroy Media';
 }else if(msg.status==='incomplete'){
 var chunk=stripMediaSources(msg.content||'');
-var display=isContinuation?(partAccumulated+'\n\n'+chunk):chunk;
-partContainer.innerHTML=marked.parse(display);
+partAccumulated=isContinuation?mergeSermonContinuation(partAccumulated,chunk):chunk;
+partContainer.innerHTML=marked.parse(partAccumulated);
 }else if(msg.status==='complete'){
 var chunk=stripMediaSources(msg.content||'');
-partAccumulated=isContinuation?(partAccumulated+'\n\n'+chunk):chunk;
+partAccumulated=isContinuation?mergeSermonContinuation(partAccumulated,chunk):chunk;
+partAccumulated=dedupeSermonPartContent(partAccumulated,partNum);
 partContainer.innerHTML=marked.parse(partAccumulated);
 var cutOff=mediaLooksIncomplete(partAccumulated);
 if(cutOff&&mediaAutoContinueCount<MEDIA_MAX_AUTO_CONTINUES){
