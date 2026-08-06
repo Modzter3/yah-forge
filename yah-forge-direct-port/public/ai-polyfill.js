@@ -1,20 +1,15 @@
 /**
- * window.Poe polyfill — uses Poe's OpenAI-compatible API via /api/poe proxy.
+ * window.Poe compatibility polyfill backed by /api/ai.
  *
- * Poe's OpenAI SSE format:
- *   data: {"choices":[{"delta":{"content":"hello"},"finish_reason":null}]}
- *   data: [DONE]
- *
- * Delivers results in the shape the app expects:
- *   handler({ responses: [{ status, content, attachments, statusText }] })
+ * This keeps the existing frontend calls unchanged while routing requests
+ * to your own API provider(s) configured on the backend.
  */
 (function () {
   if (window.Poe) return;
 
-  const API_ROUTE = '/api/poe';
+  const API_ROUTE = '/api/ai';
   const handlers  = {};
 
-  // ── result shape ─────────────────────────────────────────────
   function wrap(status, content, attachments, statusText) {
     return {
       responses: [{
@@ -22,11 +17,11 @@
         content:     content     || '',
         attachments: attachments || [],
         statusText:  statusText  || '',
+        messageId:   'forge-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9),
       }],
     };
   }
 
-  // ── query helpers ─────────────────────────────────────────────
   function parseRepeat(query) {
     const m = query.match(/^\/repeat\s+(\d+)\s+/i);
     if (m) return { count: parseInt(m[1], 10), query: query.slice(m[0].length) };
@@ -34,12 +29,12 @@
   }
 
   function extractBot(query) {
-    const m = query.match(/^@([\w\-\.]+)\s*/);
+    // Allow slashes so OpenRouter model IDs like google/gemini-2.5-pro are captured whole
+    const m = query.match(/^@([\w\-\.\/]+)\s*/);
     if (m) return { bot: m[1], prompt: query.slice(m[0].length) };
     return { bot: null, prompt: query };
   }
 
-  // ── SSE reader — yields raw data payloads ────────────────────
   async function* readSse(stream) {
     const reader  = stream.getReader();
     const decoder = new TextDecoder();
@@ -61,7 +56,6 @@
     if (buf.trim().startsWith('data:')) yield buf.trim().slice(5).trim();
   }
 
-  // ── open proxy stream ─────────────────────────────────────────
   async function openStream(bot, prompt, parameters) {
     const res = await fetch(API_ROUTE, {
       method: 'POST',
@@ -76,15 +70,37 @@
     return res;
   }
 
-  // ── extract text delta from OpenAI chunk ─────────────────────
   function deltaText(parsed) {
     try { return parsed.choices[0].delta.content || ''; } catch { return ''; }
   }
+
   function isFinished(parsed) {
     try { return parsed.choices[0].finish_reason != null; } catch { return false; }
   }
 
-  // ── non-streaming: accumulate full response ───────────────────
+  function extractAttachments(text) {
+    if (!text) return { text: '', attachments: [] };
+    const trimmed = String(text).trim();
+    if (!trimmed) return { text: '', attachments: [] };
+
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (parsed && Array.isArray(parsed.attachments)) {
+        const attachments = parsed.attachments
+          .filter(function (a) { return a && typeof a.url === 'string'; })
+          .map(function (a) { return { url: a.url, content_type: a.content_type || '' }; });
+        const bodyText = typeof parsed.text === 'string' ? parsed.text : '';
+        return { text: bodyText, attachments };
+      }
+    } catch (_) {}
+
+    if (/^https?:\/\/\S+\.(png|jpe?g|webp|gif|mp4|webm|mp3|wav|m4a)(\?\S*)?$/i.test(trimmed)) {
+      return { text: '', attachments: [{ url: trimmed }] };
+    }
+
+    return { text, attachments: [] };
+  }
+
   async function callPoe(bot, prompt, parameters) {
     const res = await openStream(bot, prompt, parameters);
     let text = '';
@@ -97,10 +113,10 @@
       text += deltaText(parsed);
     }
 
-    return { status: 'complete', content: text, attachments: [] };
+    const out = extractAttachments(text);
+    return { status: 'complete', content: out.text, attachments: out.attachments };
   }
 
-  // ── streaming: fire handler on each delta ────────────────────
   async function callPoeStreaming(bot, prompt, parameters, handlerFn) {
     const res = await openStream(bot, prompt, parameters);
     let text = '';
@@ -119,7 +135,7 @@
         const delta = deltaText(parsed);
         if (delta) {
           text += delta;
-          handlerFn(wrap('incomplete', text, []));
+          if (handlerFn) handlerFn(wrap('incomplete', text, []));
         }
         if (isFinished(parsed)) {
           finished = true;
@@ -130,19 +146,19 @@
       streamError = err;
     }
 
+    const out = extractAttachments(text);
     if (streamError) {
-      if (text) handlerFn(wrap('complete', text, []));
-      else handlerFn(wrap('error', '', [], streamError.message || String(streamError)));
+      if (out.text && handlerFn) handlerFn(wrap('complete', out.text, out.attachments));
+      else if (handlerFn) handlerFn(wrap('error', '', [], streamError.message || String(streamError)));
       return;
     }
 
-    if (!finished && text) handlerFn(wrap('complete', text, []));
-    else if (!finished) handlerFn(wrap('error', '', [], 'Stream ended without a response'));
-    else handlerFn(wrap('complete', text, []));
+    if (!finished && out.text && handlerFn) handlerFn(wrap('complete', out.text, out.attachments));
+    else if (!finished && handlerFn) handlerFn(wrap('error', '', [], 'Stream ended without a response'));
+    else if (handlerFn) handlerFn(wrap('complete', out.text, out.attachments));
   }
 
-  // ── Public API ────────────────────────────────────────────────
-  window.Poe = {
+  const apiCompat = {
     registerHandler(name, fn) {
       handlers[name] = fn;
     },
@@ -152,7 +168,7 @@
       const { count, query: cleanQuery } = parseRepeat(rawQuery);
       const { bot, prompt } = extractBot(cleanQuery);
 
-      if (!bot) return Promise.reject(new Error('No bot specified (@BotName required)'));
+      if (!bot) return Promise.reject(new Error('No model specified (@ModelId required)'));
 
       const handlerFn = handlers[handlerName];
 
@@ -180,4 +196,7 @@
       });
     },
   };
+
+  window.Poe = apiCompat;
+  if (!window.AI) window.AI = apiCompat;
 })();
