@@ -3107,6 +3107,193 @@ for(var i=0;i<checks.length;i++){sections.push(checks[i].value);}
 return sections;
 }
 /* ==========================================
+POE MODEL CATALOG (official bot handles @poe.com)
+========================================== */
+var POE_DEFAULT_MODEL='Gemini-3.6-Flash';
+var POE_MODEL_GROUPS=[
+{label:'⚡ Budget / Fast',models:[
+{v:'Grok-4.1-Fast-Non-Reasoning',l:'Grok 4.1 Fast'},
+{v:'Grok-4.1-Fast-Reasoning',l:'Grok 4.1 Fast Reasoning'},
+{v:'Gemini-3.5-Flash-Lite',l:'Gemini 3.5 Flash Lite'},
+{v:'Gemini-3.6-Flash',l:'Gemini 3.6 Flash'},
+{v:'Gemini-3-Flash',l:'Gemini 3 Flash'},
+{v:'GPT-5.4-Nano',l:'GPT 5.4 Nano'},
+{v:'Claude-Haiku-4.5',l:'Claude Haiku 4.5'},
+{v:'Grok-Code-Fast-1',l:'Grok Code Fast'}
+]},
+{label:'🔥 Mid-Tier',models:[
+{v:'Grok-4.5',l:'Grok 4.5'},
+{v:'Grok-4.6',l:'Grok 4.6'},
+{v:'Grok-4',l:'Grok 4'},
+{v:'Claude-Sonnet-5',l:'Claude Sonnet 5'},
+{v:'Claude-Sonnet-4.6',l:'Claude Sonnet 4.6'},
+{v:'Claude-Sonnet-4.5',l:'Claude Sonnet 4.5'},
+{v:'Gemini-3.7-Flash',l:'Gemini 3.7 Flash'},
+{v:'Gemini-3.5-Flash',l:'Gemini 3.5 Flash'},
+{v:'Gemini-Omni-Flash',l:'Gemini Omni Flash'},
+{v:'Gemini-3-Pro',l:'Gemini 3 Pro'},
+{v:'Gemini-3.1-Pro',l:'Gemini 3.1 Pro'},
+{v:'GPT-5.6-Luna',l:'GPT 5.6 Luna'},
+{v:'GPT-5.6-Terra',l:'GPT 5.6 Terra'},
+{v:'GPT-5.4-Mini',l:'GPT 5.4 Mini'},
+{v:'GPT-5.5',l:'GPT 5.5'}
+]},
+{label:'🧪 Open Source',models:[
+{v:'GLM-5',l:'GLM 5'},
+{v:'Qwen3-Max',l:'Qwen 3 Max'},
+{v:'Kimi-K3',l:'Kimi K3'},
+{v:'Kimi-K2.5',l:'Kimi 2.5'},
+{v:'GPT-OSS-120B',l:'GPT OSS 120B'},
+{v:'Gemma-4-31B',l:'Gemma 4 31B'},
+{v:'DeepSeek-R1',l:'DeepSeek R1'}
+]},
+{label:'👑 Premium',models:[
+{v:'Claude-Opus-5',l:'Claude Opus 5'},
+{v:'Claude-Fable-5',l:'Claude Fable 5'},
+{v:'Claude-Opus-4.8',l:'Claude Opus 4.8'},
+{v:'Claude-Opus-4.6',l:'Claude Opus 4.6'},
+{v:'GPT-5.6-Sol',l:'GPT 5.6 Sol'},
+{v:'GPT-5.5-Pro',l:'GPT 5.5 Pro'},
+{v:'GPT-5.4-Pro',l:'GPT 5.4 Pro'}
+]}
+];
+var POE_SERMON_MODEL_GROUPS=[
+{label:'⚡ Budget / Fast',models:[
+{v:'Grok-4.1-Fast-Non-Reasoning',l:'Grok 4.1 Fast -- Free & Raw'},
+{v:'Grok-4.1-Fast-Reasoning',l:'Grok 4.1 Fast Reasoning'},
+{v:'Gemini-3.5-Flash-Lite',l:'Gemini 3.5 Flash Lite -- Cheapest'},
+{v:'Gemini-3.6-Flash',l:'Gemini 3.6 Flash -- Fast & Brutal'},
+{v:'Gemini-3-Flash',l:'Gemini 3 Flash -- Legacy Fast'},
+{v:'GPT-5.4-Nano',l:'GPT 5.4 Nano -- High Volume'},
+{v:'Claude-Haiku-4.5',l:'Claude Haiku 4.5 -- Fast'},
+{v:'Grok-Code-Fast-1',l:'Grok Code Fast -- Budget'}
+]},
+{label:'🔥 Mid-Tier',models:[
+{v:'Grok-4.5',l:'Grok 4.5 -- Frontier'},
+{v:'Grok-4.6',l:'Grok 4.6 -- Agent King'},
+{v:'Grok-4',l:'Grok 4 -- Unfiltered King'},
+{v:'Claude-Sonnet-5',l:'Claude Sonnet 5 -- Agentic'},
+{v:'Claude-Sonnet-4.6',l:'Claude Sonnet 4.6 -- Smart'},
+{v:'Claude-Sonnet-4.5',l:'Claude Sonnet 4.5 -- Smart'},
+{v:'Gemini-3.7-Flash',l:'Gemini 3.7 Flash -- Coding Beast'},
+{v:'Gemini-3.5-Flash',l:'Gemini 3.5 Flash -- Agentic'},
+{v:'Gemini-Omni-Flash',l:'Gemini Omni Flash -- Multimodal'},
+{v:'Gemini-3-Pro',l:'Gemini 3 Pro -- Deep Context'},
+{v:'Gemini-3.1-Pro',l:'Gemini 3.1 Pro -- 2x Reasoning'},
+{v:'GPT-5.6-Luna',l:'GPT 5.6 Luna -- Fast Draft'},
+{v:'GPT-5.6-Terra',l:'GPT 5.6 Terra -- Balanced'},
+{v:'GPT-5.4-Mini',l:'GPT 5.4 Mini -- Production'},
+{v:'GPT-5.5',l:'GPT 5.5 -- Knowledge Work'}
+]},
+{label:'🧪 Open Source / Test',models:[
+{v:'GLM-5',l:'GLM 5 -- Opus-Class Open Source'},
+{v:'Qwen3-Max',l:'Qwen 3 Max -- Multilingual Beast'},
+{v:'Kimi-K3',l:'Kimi K3 -- Moonshot Flagship'},
+{v:'Kimi-K2.5',l:'Kimi 2.5 -- Moonshot'},
+{v:'GPT-OSS-120B',l:'GPT OSS 120B -- Open Weight'},
+{v:'Gemma-4-31B',l:'Gemma 4 31B -- Google Open'},
+{v:'DeepSeek-R1',l:'DeepSeek R1 -- Reasoning'}
+]},
+{label:'👑 Premium',models:[
+{v:'Claude-Opus-5',l:'Claude Opus 5 -- Maximum Power'},
+{v:'Claude-Fable-5',l:'Claude Fable 5 -- Mythos Class'},
+{v:'Claude-Opus-4.8',l:'Claude Opus 4.8 -- Enterprise'},
+{v:'Claude-Opus-4.6',l:'Claude Opus 4.6 -- Maximum Power'},
+{v:'GPT-5.6-Sol',l:'GPT 5.6 Sol -- Flagship'},
+{v:'GPT-5.5-Pro',l:'GPT 5.5 Pro -- Deep Think'},
+{v:'GPT-5.4-Pro',l:'GPT 5.4 Pro -- Precision'}
+]}
+];
+var POE_WEB_SEARCH_MODELS=[
+{v:'Gemini-3.7-Flash',l:'Gemini 3.7 Flash -- Web Search'},
+{v:'Gemini-3.6-Flash',l:'Gemini 3.6 Flash -- Web Search (Fast)'},
+{v:'Gemini-3.5-Flash',l:'Gemini 3.5 Flash -- Web Search'},
+{v:'Gemini-3.1-Pro',l:'Gemini 3.1 Pro -- Web Search'},
+{v:'Gemini-3-Pro',l:'Gemini 3 Pro -- Web Search'},
+{v:'Gemini-3-Flash',l:'Gemini 3 Flash -- Web Search (Budget)'},
+{v:'GPT-5.6-Terra',l:'GPT 5.6 Terra -- Web Search'},
+{v:'GPT-5.5',l:'GPT 5.5 -- Web Search'},
+{v:'Claude-Sonnet-5',l:'Claude Sonnet 5 -- Web Search'},
+{v:'Claude-Sonnet-4.5',l:'Claude Sonnet 4.5 -- Web Search'},
+{v:'Grok-4.6',l:'Grok 4.6 -- Web Search'},
+{v:'Grok-4.1-Fast-Non-Reasoning',l:'Grok 4.1 Fast (limited web)'}
+];
+var POE_SCRIPTURE_FETCH_MODELS=[
+{v:'Gemini-3.6-Flash',l:'Gemini 3.6 Flash (Fast)'},
+{v:'Gemini-3.7-Flash',l:'Gemini 3.7 Flash'},
+{v:'Gemini-3-Pro',l:'Gemini 3 Pro'},
+{v:'Gemini-3.1-Pro',l:'Gemini 3.1 Pro'},
+{v:'GPT-5.6-Terra',l:'GPT 5.6 Terra'},
+{v:'GPT-5.5',l:'GPT 5.5'},
+{v:'Claude-Sonnet-5',l:'Claude Sonnet 5'},
+{v:'Claude-Sonnet-4.5',l:'Claude Sonnet 4.5'},
+{v:'Grok-4.1-Fast-Non-Reasoning',l:'Grok 4.1 Fast'}
+];
+var POE_IMAGE_PROMPT_MODELS=[
+{v:'Gemini-3.6-Flash',l:'Gemini 3.6 Flash'},
+{v:'Gemini-3.7-Flash',l:'Gemini 3.7 Flash'},
+{v:'Gemini-3-Pro',l:'Gemini 3 Pro'},
+{v:'Claude-Sonnet-5',l:'Claude Sonnet 5'},
+{v:'Claude-Sonnet-4.5',l:'Claude Sonnet 4.5'},
+{v:'Claude-Opus-5',l:'Claude Opus 5'},
+{v:'GPT-5.6-Terra',l:'GPT 5.6 Terra'},
+{v:'GPT-5.5',l:'GPT 5.5'},
+{v:'Grok-4.6',l:'Grok 4.6'},
+{v:'Grok-4.1-Fast-Non-Reasoning',l:'Grok 4.1 Fast'}
+];
+function buildPoeOptgroupsHtml(groups,selected){
+var h='',g,m,mo;
+for(g=0;g<groups.length;g++){
+h+='<optgroup label="'+groups[g].label+'">';
+for(m=0;m<groups[g].models.length;m++){
+mo=groups[g].models[m];
+h+='<option value="'+mo.v+'"'+(mo.v===selected?' selected':'')+'>'+mo.l+'</option>';
+}
+h+='</optgroup>';
+}
+return h;
+}
+function buildPoeFlatOptionsHtml(models,selected){
+var h='',m;
+for(m=0;m<models.length;m++){
+h+='<option value="'+models[m].v+'"'+(models[m].v===selected?' selected':'')+'>'+models[m].l+'</option>';
+}
+return h;
+}
+function fillPoeModelSelect(selectId,groups,defaultModel){
+var el=document.getElementById(selectId);
+if(!el)return;
+var cur=el.value||defaultModel||POE_DEFAULT_MODEL;
+el.innerHTML=buildPoeOptgroupsHtml(groups,cur);
+if(!el.value)el.value=defaultModel||POE_DEFAULT_MODEL;
+}
+function fillPoeFlatSelect(selectId,models,defaultModel){
+var el=document.getElementById(selectId);
+if(!el)return;
+var cur=el.value||defaultModel||POE_DEFAULT_MODEL;
+el.innerHTML=buildPoeFlatOptionsHtml(models,cur);
+if(!el.value)el.value=defaultModel||POE_DEFAULT_MODEL;
+}
+function fillPoeWebSearchSelect(selectId,defaultModel){
+var el=document.getElementById(selectId);
+if(!el)return;
+var cur=el.value||defaultModel||POE_DEFAULT_MODEL;
+el.innerHTML='<optgroup label="🔍 Web Search (Real News)">'+buildPoeFlatOptionsHtml(POE_WEB_SEARCH_MODELS,cur)+'</optgroup>';
+if(!el.value)el.value=defaultModel||POE_DEFAULT_MODEL;
+}
+function initPoeModelSelects(){
+fillPoeModelSelect('modelSelect',POE_SERMON_MODEL_GROUPS,POE_DEFAULT_MODEL);
+fillPoeModelSelect('dismantleModel',POE_MODEL_GROUPS,POE_DEFAULT_MODEL);
+fillPoeModelSelect('destroyModel',POE_MODEL_GROUPS,POE_DEFAULT_MODEL);
+fillPoeModelSelect('yahChatModel',POE_MODEL_GROUPS,POE_DEFAULT_MODEL);
+fillPoeWebSearchSelect('newsModel',POE_DEFAULT_MODEL);
+fillPoeFlatSelect('scriptureFetchModel',POE_SCRIPTURE_FETCH_MODELS,POE_DEFAULT_MODEL);
+fillPoeFlatSelect('apocFetchModel',POE_WEB_SEARCH_MODELS,'Gemini-3.6-Flash');
+fillPoeFlatSelect('sealedFetchModel',POE_WEB_SEARCH_MODELS,'Gemini-3.6-Flash');
+fillPoeFlatSelect('imagePromptModel',POE_IMAGE_PROMPT_MODELS,'Gemini-3.6-Flash');
+if(typeof updateNewsSearchNote==='function')updateNewsSearchNote();
+}
+/* ==========================================
 MODEL SELECTOR HELPER
 ========================================== */
 function getSelectedModel(){
@@ -7903,6 +8090,7 @@ renderLibrary();
 });
 }
 initLibraryFromDB();
+initPoeModelSelects();
 });
 function rawCopy(text,btn){
 var ta=document.createElement('textarea');
