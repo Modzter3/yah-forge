@@ -137,9 +137,8 @@ export default async function handler(req) {
 }
 
 /**
- * Poe model IDs are inconsistent across families:
- * - Claude/Gemini/Grok bots: Title-Case handles (Claude-Sonnet-5, Gemini-3.1-Pro)
- * - GPT bots: lowercase slugs (gpt-5.4, gpt-5.6-sol) per Poe API samples
+ * Poe Creator API model field uses lowercase slugs (see GET https://api.poe.com/v1/models).
+ * UI may show Title-Case bot handles from poe.com — normalize to API ids before calling.
  */
 function normalizePoeModel(bot) {
   const raw = String(bot || '').trim();
@@ -149,32 +148,38 @@ function normalizePoeModel(bot) {
   const aliases = {
     'muse-spark-1.1': 'muse-spark-1-1',
     'muse-spark-1-1': 'muse-spark-1-1',
+    // Legacy Title-Case / poe.com handles → API slugs
+    'claude-sonnet-5': 'claude-sonnet-4.6',
+    'claude-opus-5': 'claude-opus-4.8',
+    'claude-fable-5': 'claude-opus-4.8',
+    'gpt-5.5': 'gpt-5.4',
+    'gpt-5.5-pro': 'gpt-5.4-pro',
+    'gpt-5.6-sol': 'gpt-5.4-pro',
+    'gpt-5.6-luna': 'gpt-5.4-mini',
+    'gpt-5.6-terra': 'gpt-5.4',
+    'grok-4.1-fast-non-reasoning': 'grok-4.5',
+    'grok-4.1-fast-reasoning': 'grok-4.5',
+    'grok-4': 'grok-4.6',
+    'grok-code-fast-1': 'grok-4.5',
+    'gemini-3-pro': 'gemini-3.1-pro',
+    'qwen3-max': 'qwen3-max-n',
+    'deepseek-r1': 'deepseek-r1-n',
+    'gpt-oss-120b': 'gpt-oss-120b',
+    'gemma-4-31b': 'gemma-4-31b',
+    'glm-5': 'glm-5',
+    'kimi-k3': 'kimi-k3',
+    'kimi-k2.5': 'kimi-k2.5',
   };
   if (aliases[lower]) return aliases[lower];
 
-  if (/^gpt-/i.test(raw)) return lower;
-
-  if (/^(claude|gemini|grok|deepseek|llama|mistral)-/i.test(raw)) {
-    return raw.split('-').map((part) => {
-      if (/^[\d.]+/.test(part)) return part;
-      return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
-    }).join('-');
-  }
-
-  return raw;
+  return lower;
 }
 
 function modelCandidates(bot) {
   const raw = String(bot || '').trim();
   const primary = normalizePoeModel(raw);
-  const lower = raw.toLowerCase();
-  const titled = raw.split('-').map((part) => {
-    if (/^[\d.]+/.test(part)) return part;
-    return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
-  }).join('-');
-
   const out = [];
-  for (const id of [primary, raw, titled, lower]) {
+  for (const id of [primary, raw.toLowerCase(), raw]) {
     if (id && !out.includes(id)) out.push(id);
   }
   return out;

@@ -772,7 +772,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
           <label>or any bot:</label>
           <input type="text" class="custom-model-input" id="customDestroyModel" placeholder="e.g. anthropic/claude-sonnet-4" oninput="onCustomModel(this,'destroyModel')" onfocus="this.select()">
         </div>
-        <div class="custom-model-hint">Type any Poe bot name (e.g. Gemini-3.6-Flash) to override the dropdown</div>
+        <div class="custom-model-hint">Type any Poe API model id (e.g. claude-sonnet-4.6) to override the dropdown</div>
       </div>
       <div class="destroy-one-shot-note" style="flex:1 1 220px;min-width:200px;font-size:0.72rem;color:var(--text-muted);line-height:1.45;font-family:'Bitter',serif;border:1px solid var(--border);border-radius:8px;padding:10px 12px;background:rgba(231,76,60,0.06);">
         <strong style="color:#e74c3c;">One forge</strong> — one API response (long models like Haiku often fill it in one shot). Use <strong>Continue</strong> if you want another pass on your credits. No auto follow-ups.
@@ -987,7 +987,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         </select>
         <div class="custom-model-row">
           <label>or any bot:</label>
-          <input type="text" class="custom-model-input" id="customYahChatModel" placeholder="e.g. Gemini-3.6-Flash" oninput="onCustomModel(this,'yahChatModel')" onfocus="this.select()">
+          <input type="text" class="custom-model-input" id="customYahChatModel" placeholder="e.g. claude-sonnet-4.6" oninput="onCustomModel(this,'yahChatModel')" onfocus="this.select()">
         </div>
       </div>
     </div>
@@ -1098,7 +1098,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
           <label>or type any bot:</label>
           <input type="text" class="custom-model-input" id="customModelInput" placeholder="e.g. DeepSeek-R1" oninput="onCustomModel(this,'modelSelect')" onfocus="this.select()">
         </div>
-        <div class="custom-model-hint">Type any Poe bot name (e.g. Claude-Sonnet-5) to override the dropdown</div>
+        <div class="custom-model-hint">Type any Poe API model id (e.g. claude-sonnet-4.6) to override the dropdown</div>
       </div>
       <div class="part-count-wrap">
         <span class="pc-label"><i class="fas fa-layer-group"></i> Parts:</span>
@@ -2743,7 +2743,7 @@ return p;
 function getScriptureFetchModel(){
 var selId=(currentMode==='sealed')?'sealedFetchModel':(currentMode==='apocrypha')?'apocFetchModel':'scriptureFetchModel';
 var el=document.getElementById(selId);
-return (el&&el.value)?el.value:'Gemini-3.6-Flash';
+return (el&&el.value)?coercePoeModelId(el.value):POE_DEFAULT_MODEL;
 }
 function getVerseFetchParams(model,type){
 var params={};
@@ -3107,139 +3107,148 @@ for(var i=0;i<checks.length;i++){sections.push(checks[i].value);}
 return sections;
 }
 /* ==========================================
-POE MODEL CATALOG (official bot handles @poe.com)
+POE MODEL CATALOG — ids from GET https://api.poe.com/v1/models (lowercase slugs)
 ========================================== */
-var POE_DEFAULT_MODEL='Gemini-3.6-Flash';
+var POE_DEFAULT_MODEL='gemini-3.6-flash';
+var POE_LEGACY_MODEL_MAP={
+'Gemini-3.6-Flash':'gemini-3.6-flash','Gemini-3-Flash':'gemini-3-flash','Gemini-3-Pro':'gemini-3.1-pro',
+'Gemini-3.1-Pro':'gemini-3.1-pro','Gemini-3.7-Flash':'gemini-3.7-flash','Gemini-3.5-Flash':'gemini-3.5-flash',
+'Gemini-3.5-Flash-Lite':'gemini-3.5-flash-lite','Gemini-Omni-Flash':'gemini-omni-flash',
+'Claude-Sonnet-5':'claude-sonnet-4.6','Claude-Sonnet-4.6':'claude-sonnet-4.6','Claude-Sonnet-4.5':'claude-sonnet-4.5',
+'Claude-Opus-5':'claude-opus-4.8','Claude-Fable-5':'claude-opus-4.8','Claude-Opus-4.8':'claude-opus-4.8',
+'Claude-Opus-4.6':'claude-opus-4.6','Claude-Haiku-4.5':'claude-haiku-4.5',
+'GPT-5.6-Sol':'gpt-5.4-pro','GPT-5.6-Luna':'gpt-5.4-mini','GPT-5.6-Terra':'gpt-5.4','GPT-5.5':'gpt-5.4',
+'GPT-5.5-Pro':'gpt-5.4-pro','GPT-5.4-Pro':'gpt-5.4-pro','GPT-5.4-Mini':'gpt-5.4-mini','GPT-5.4-Nano':'gpt-5.4-nano',
+'GPT-5.2':'gpt-5.2','Grok-4.6':'grok-4.6','Grok-4.5':'grok-4.5','Grok-4.3':'grok-4.3',
+'Grok-4.1-Fast-Non-Reasoning':'grok-4.5','Grok-4.1-Fast-Reasoning':'grok-4.5','Grok-4':'grok-4.6',
+'Grok-Code-Fast-1':'grok-4.5','GLM-5':'glm-5','Qwen3-Max':'qwen3-max-n','Kimi-K3':'kimi-k3','Kimi-K2.5':'kimi-k2.5',
+'GPT-OSS-120B':'gpt-oss-120b','Gemma-4-31B':'gemma-4-31b','DeepSeek-R1':'deepseek-r1-n'
+};
+function coercePoeModelId(id){
+if(!id)return POE_DEFAULT_MODEL;
+var s=String(id).trim();
+if(POE_LEGACY_MODEL_MAP[s])return POE_LEGACY_MODEL_MAP[s];
+var lower=s.toLowerCase();
+if(POE_LEGACY_MODEL_MAP[lower])return POE_LEGACY_MODEL_MAP[lower];
+return lower;
+}
 var POE_MODEL_GROUPS=[
 {label:'⚡ Budget / Fast',models:[
-{v:'Grok-4.1-Fast-Non-Reasoning',l:'Grok 4.1 Fast'},
-{v:'Grok-4.1-Fast-Reasoning',l:'Grok 4.1 Fast Reasoning'},
-{v:'Gemini-3.5-Flash-Lite',l:'Gemini 3.5 Flash Lite'},
-{v:'Gemini-3.6-Flash',l:'Gemini 3.6 Flash'},
-{v:'Gemini-3-Flash',l:'Gemini 3 Flash'},
-{v:'GPT-5.4-Nano',l:'GPT 5.4 Nano'},
-{v:'Claude-Haiku-4.5',l:'Claude Haiku 4.5'},
-{v:'Grok-Code-Fast-1',l:'Grok Code Fast'}
+{v:'gemini-3.5-flash-lite',l:'Gemini 3.5 Flash Lite'},
+{v:'gemini-3.6-flash',l:'Gemini 3.6 Flash'},
+{v:'gemini-3-flash',l:'Gemini 3 Flash'},
+{v:'gemini-2.5-flash-lite',l:'Gemini 2.5 Flash Lite'},
+{v:'gpt-5.4-nano',l:'GPT 5.4 Nano'},
+{v:'gpt-5-nano',l:'GPT 5 Nano'},
+{v:'claude-haiku-4.5',l:'Claude Haiku 4.5'},
+{v:'grok-4.5',l:'Grok 4.5'}
 ]},
 {label:'🔥 Mid-Tier',models:[
-{v:'Grok-4.5',l:'Grok 4.5'},
-{v:'Grok-4.6',l:'Grok 4.6'},
-{v:'Grok-4',l:'Grok 4'},
-{v:'Claude-Sonnet-5',l:'Claude Sonnet 5'},
-{v:'Claude-Sonnet-4.6',l:'Claude Sonnet 4.6'},
-{v:'Claude-Sonnet-4.5',l:'Claude Sonnet 4.5'},
-{v:'Gemini-3.7-Flash',l:'Gemini 3.7 Flash'},
-{v:'Gemini-3.5-Flash',l:'Gemini 3.5 Flash'},
-{v:'Gemini-Omni-Flash',l:'Gemini Omni Flash'},
-{v:'Gemini-3-Pro',l:'Gemini 3 Pro'},
-{v:'Gemini-3.1-Pro',l:'Gemini 3.1 Pro'},
-{v:'GPT-5.6-Luna',l:'GPT 5.6 Luna'},
-{v:'GPT-5.6-Terra',l:'GPT 5.6 Terra'},
-{v:'GPT-5.4-Mini',l:'GPT 5.4 Mini'},
-{v:'GPT-5.5',l:'GPT 5.5'}
+{v:'grok-4.6',l:'Grok 4.6'},
+{v:'grok-4.3',l:'Grok 4.3'},
+{v:'claude-sonnet-4.6',l:'Claude Sonnet 4.6'},
+{v:'claude-sonnet-4.5',l:'Claude Sonnet 4.5'},
+{v:'gemini-3.7-flash',l:'Gemini 3.7 Flash'},
+{v:'gemini-3.5-flash',l:'Gemini 3.5 Flash'},
+{v:'gemini-3.1-pro',l:'Gemini 3.1 Pro'},
+{v:'gemini-2.5-pro',l:'Gemini 2.5 Pro'},
+{v:'gpt-5.4',l:'GPT 5.4'},
+{v:'gpt-5.4-mini',l:'GPT 5.4 Mini'},
+{v:'gpt-5.2',l:'GPT 5.2'},
+{v:'gpt-5.1',l:'GPT 5.1'}
 ]},
 {label:'🧪 Open Source',models:[
-{v:'GLM-5',l:'GLM 5'},
-{v:'Qwen3-Max',l:'Qwen 3 Max'},
-{v:'Kimi-K3',l:'Kimi K3'},
-{v:'Kimi-K2.5',l:'Kimi 2.5'},
-{v:'GPT-OSS-120B',l:'GPT OSS 120B'},
-{v:'Gemma-4-31B',l:'Gemma 4 31B'},
-{v:'DeepSeek-R1',l:'DeepSeek R1'}
+{v:'glm-5',l:'GLM 5'},
+{v:'glm-5.2',l:'GLM 5.2'},
+{v:'kimi-k3',l:'Kimi K3'},
+{v:'kimi-k2.5',l:'Kimi K2.5'},
+{v:'gpt-oss-120b',l:'GPT OSS 120B'},
+{v:'gemma-4-31b',l:'Gemma 4 31B'},
+{v:'deepseek-v3.2',l:'DeepSeek V3.2'},
+{v:'deepseek-r1-n',l:'DeepSeek R1'},
+{v:'qwen3-max-n',l:'Qwen 3 Max'}
 ]},
 {label:'👑 Premium',models:[
-{v:'Claude-Opus-5',l:'Claude Opus 5'},
-{v:'Claude-Fable-5',l:'Claude Fable 5'},
-{v:'Claude-Opus-4.8',l:'Claude Opus 4.8'},
-{v:'Claude-Opus-4.6',l:'Claude Opus 4.6'},
-{v:'GPT-5.6-Sol',l:'GPT 5.6 Sol'},
-{v:'GPT-5.5-Pro',l:'GPT 5.5 Pro'},
-{v:'GPT-5.4-Pro',l:'GPT 5.4 Pro'}
+{v:'claude-opus-4.8',l:'Claude Opus 4.8'},
+{v:'claude-opus-4.7',l:'Claude Opus 4.7'},
+{v:'claude-opus-4.6',l:'Claude Opus 4.6'},
+{v:'gpt-5.4-pro',l:'GPT 5.4 Pro'},
+{v:'gpt-5.2-pro',l:'GPT 5.2 Pro'},
+{v:'gpt-5-pro',l:'GPT 5 Pro'}
 ]}
 ];
 var POE_SERMON_MODEL_GROUPS=[
 {label:'⚡ Budget / Fast',models:[
-{v:'Grok-4.1-Fast-Non-Reasoning',l:'Grok 4.1 Fast -- Free & Raw'},
-{v:'Grok-4.1-Fast-Reasoning',l:'Grok 4.1 Fast Reasoning'},
-{v:'Gemini-3.5-Flash-Lite',l:'Gemini 3.5 Flash Lite -- Cheapest'},
-{v:'Gemini-3.6-Flash',l:'Gemini 3.6 Flash -- Fast & Brutal'},
-{v:'Gemini-3-Flash',l:'Gemini 3 Flash -- Legacy Fast'},
-{v:'GPT-5.4-Nano',l:'GPT 5.4 Nano -- High Volume'},
-{v:'Claude-Haiku-4.5',l:'Claude Haiku 4.5 -- Fast'},
-{v:'Grok-Code-Fast-1',l:'Grok Code Fast -- Budget'}
+{v:'gemini-3.5-flash-lite',l:'Gemini 3.5 Flash Lite -- Cheapest'},
+{v:'gemini-3.6-flash',l:'Gemini 3.6 Flash -- Fast & Brutal'},
+{v:'gemini-3-flash',l:'Gemini 3 Flash -- Legacy Fast'},
+{v:'gpt-5.4-nano',l:'GPT 5.4 Nano -- High Volume'},
+{v:'claude-haiku-4.5',l:'Claude Haiku 4.5 -- Fast'},
+{v:'grok-4.5',l:'Grok 4.5 -- Free & Raw'}
 ]},
 {label:'🔥 Mid-Tier',models:[
-{v:'Grok-4.5',l:'Grok 4.5 -- Frontier'},
-{v:'Grok-4.6',l:'Grok 4.6 -- Agent King'},
-{v:'Grok-4',l:'Grok 4 -- Unfiltered King'},
-{v:'Claude-Sonnet-5',l:'Claude Sonnet 5 -- Agentic'},
-{v:'Claude-Sonnet-4.6',l:'Claude Sonnet 4.6 -- Smart'},
-{v:'Claude-Sonnet-4.5',l:'Claude Sonnet 4.5 -- Smart'},
-{v:'Gemini-3.7-Flash',l:'Gemini 3.7 Flash -- Coding Beast'},
-{v:'Gemini-3.5-Flash',l:'Gemini 3.5 Flash -- Agentic'},
-{v:'Gemini-Omni-Flash',l:'Gemini Omni Flash -- Multimodal'},
-{v:'Gemini-3-Pro',l:'Gemini 3 Pro -- Deep Context'},
-{v:'Gemini-3.1-Pro',l:'Gemini 3.1 Pro -- 2x Reasoning'},
-{v:'GPT-5.6-Luna',l:'GPT 5.6 Luna -- Fast Draft'},
-{v:'GPT-5.6-Terra',l:'GPT 5.6 Terra -- Balanced'},
-{v:'GPT-5.4-Mini',l:'GPT 5.4 Mini -- Production'},
-{v:'GPT-5.5',l:'GPT 5.5 -- Knowledge Work'}
+{v:'grok-4.6',l:'Grok 4.6 -- Agent King'},
+{v:'grok-4.3',l:'Grok 4.3 -- Reasoning'},
+{v:'claude-sonnet-4.6',l:'Claude Sonnet 4.6 -- Smart'},
+{v:'claude-sonnet-4.5',l:'Claude Sonnet 4.5 -- Smart'},
+{v:'gemini-3.7-flash',l:'Gemini 3.7 Flash -- Coding Beast'},
+{v:'gemini-3.5-flash',l:'Gemini 3.5 Flash -- Agentic'},
+{v:'gemini-3.1-pro',l:'Gemini 3.1 Pro -- Deep Context'},
+{v:'gpt-5.4',l:'GPT 5.4 -- Balanced'},
+{v:'gpt-5.4-mini',l:'GPT 5.4 Mini -- Production'},
+{v:'gpt-5.2',l:'GPT 5.2 -- Strong General'}
 ]},
 {label:'🧪 Open Source / Test',models:[
-{v:'GLM-5',l:'GLM 5 -- Opus-Class Open Source'},
-{v:'Qwen3-Max',l:'Qwen 3 Max -- Multilingual Beast'},
-{v:'Kimi-K3',l:'Kimi K3 -- Moonshot Flagship'},
-{v:'Kimi-K2.5',l:'Kimi 2.5 -- Moonshot'},
-{v:'GPT-OSS-120B',l:'GPT OSS 120B -- Open Weight'},
-{v:'Gemma-4-31B',l:'Gemma 4 31B -- Google Open'},
-{v:'DeepSeek-R1',l:'DeepSeek R1 -- Reasoning'}
+{v:'glm-5',l:'GLM 5 -- Opus-Class Open Source'},
+{v:'qwen3-max-n',l:'Qwen 3 Max -- Multilingual Beast'},
+{v:'kimi-k3',l:'Kimi K3 -- Moonshot Flagship'},
+{v:'kimi-k2.5',l:'Kimi K2.5 -- Moonshot'},
+{v:'gpt-oss-120b',l:'GPT OSS 120B -- Open Weight'},
+{v:'gemma-4-31b',l:'Gemma 4 31B -- Google Open'},
+{v:'deepseek-v3.2',l:'DeepSeek V3.2 -- Reasoning'},
+{v:'deepseek-r1-n',l:'DeepSeek R1 -- Reasoning'}
 ]},
 {label:'👑 Premium',models:[
-{v:'Claude-Opus-5',l:'Claude Opus 5 -- Maximum Power'},
-{v:'Claude-Fable-5',l:'Claude Fable 5 -- Mythos Class'},
-{v:'Claude-Opus-4.8',l:'Claude Opus 4.8 -- Enterprise'},
-{v:'Claude-Opus-4.6',l:'Claude Opus 4.6 -- Maximum Power'},
-{v:'GPT-5.6-Sol',l:'GPT 5.6 Sol -- Flagship'},
-{v:'GPT-5.5-Pro',l:'GPT 5.5 Pro -- Deep Think'},
-{v:'GPT-5.4-Pro',l:'GPT 5.4 Pro -- Precision'}
+{v:'claude-opus-4.8',l:'Claude Opus 4.8 -- Enterprise'},
+{v:'claude-opus-4.6',l:'Claude Opus 4.6 -- Maximum Power'},
+{v:'gpt-5.4-pro',l:'GPT 5.4 Pro -- Precision'},
+{v:'gpt-5.2-pro',l:'GPT 5.2 Pro -- Deep Think'},
+{v:'gpt-5-pro',l:'GPT 5 Pro -- Flagship'}
 ]}
 ];
 var POE_WEB_SEARCH_MODELS=[
-{v:'Gemini-3.7-Flash',l:'Gemini 3.7 Flash -- Web Search'},
-{v:'Gemini-3.6-Flash',l:'Gemini 3.6 Flash -- Web Search (Fast)'},
-{v:'Gemini-3.5-Flash',l:'Gemini 3.5 Flash -- Web Search'},
-{v:'Gemini-3.1-Pro',l:'Gemini 3.1 Pro -- Web Search'},
-{v:'Gemini-3-Pro',l:'Gemini 3 Pro -- Web Search'},
-{v:'Gemini-3-Flash',l:'Gemini 3 Flash -- Web Search (Budget)'},
-{v:'GPT-5.6-Terra',l:'GPT 5.6 Terra -- Web Search'},
-{v:'GPT-5.5',l:'GPT 5.5 -- Web Search'},
-{v:'Claude-Sonnet-5',l:'Claude Sonnet 5 -- Web Search'},
-{v:'Claude-Sonnet-4.5',l:'Claude Sonnet 4.5 -- Web Search'},
-{v:'Grok-4.6',l:'Grok 4.6 -- Web Search'},
-{v:'Grok-4.1-Fast-Non-Reasoning',l:'Grok 4.1 Fast (limited web)'}
+{v:'gemini-3.7-flash',l:'Gemini 3.7 Flash -- Web Search'},
+{v:'gemini-3.6-flash',l:'Gemini 3.6 Flash -- Web Search (Fast)'},
+{v:'gemini-3.5-flash',l:'Gemini 3.5 Flash -- Web Search'},
+{v:'gemini-3.1-pro',l:'Gemini 3.1 Pro -- Web Search'},
+{v:'gemini-3-flash',l:'Gemini 3 Flash -- Web Search (Budget)'},
+{v:'gemini-2.5-pro',l:'Gemini 2.5 Pro -- Web Search'},
+{v:'gpt-5.4',l:'GPT 5.4 -- Web Search'},
+{v:'claude-sonnet-4.6',l:'Claude Sonnet 4.6 -- Web Search'},
+{v:'claude-sonnet-4.5',l:'Claude Sonnet 4.5 -- Web Search'},
+{v:'grok-4.6',l:'Grok 4.6 -- Web Search'},
+{v:'grok-4.5',l:'Grok 4.5 -- Web Search'}
 ];
 var POE_SCRIPTURE_FETCH_MODELS=[
-{v:'Gemini-3.6-Flash',l:'Gemini 3.6 Flash (Fast)'},
-{v:'Gemini-3.7-Flash',l:'Gemini 3.7 Flash'},
-{v:'Gemini-3-Pro',l:'Gemini 3 Pro'},
-{v:'Gemini-3.1-Pro',l:'Gemini 3.1 Pro'},
-{v:'GPT-5.6-Terra',l:'GPT 5.6 Terra'},
-{v:'GPT-5.5',l:'GPT 5.5'},
-{v:'Claude-Sonnet-5',l:'Claude Sonnet 5'},
-{v:'Claude-Sonnet-4.5',l:'Claude Sonnet 4.5'},
-{v:'Grok-4.1-Fast-Non-Reasoning',l:'Grok 4.1 Fast'}
+{v:'gemini-3.6-flash',l:'Gemini 3.6 Flash (Fast)'},
+{v:'gemini-3.7-flash',l:'Gemini 3.7 Flash'},
+{v:'gemini-3.1-pro',l:'Gemini 3.1 Pro'},
+{v:'gpt-5.4',l:'GPT 5.4'},
+{v:'claude-sonnet-4.6',l:'Claude Sonnet 4.6'},
+{v:'claude-sonnet-4.5',l:'Claude Sonnet 4.5'},
+{v:'grok-4.5',l:'Grok 4.5'}
 ];
 var POE_IMAGE_PROMPT_MODELS=[
-{v:'Gemini-3.6-Flash',l:'Gemini 3.6 Flash'},
-{v:'Gemini-3.7-Flash',l:'Gemini 3.7 Flash'},
-{v:'Gemini-3-Pro',l:'Gemini 3 Pro'},
-{v:'Claude-Sonnet-5',l:'Claude Sonnet 5'},
-{v:'Claude-Sonnet-4.5',l:'Claude Sonnet 4.5'},
-{v:'Claude-Opus-5',l:'Claude Opus 5'},
-{v:'GPT-5.6-Terra',l:'GPT 5.6 Terra'},
-{v:'GPT-5.5',l:'GPT 5.5'},
-{v:'Grok-4.6',l:'Grok 4.6'},
-{v:'Grok-4.1-Fast-Non-Reasoning',l:'Grok 4.1 Fast'}
+{v:'gemini-3.6-flash',l:'Gemini 3.6 Flash'},
+{v:'gemini-3.7-flash',l:'Gemini 3.7 Flash'},
+{v:'gemini-3.1-pro',l:'Gemini 3.1 Pro'},
+{v:'claude-sonnet-4.6',l:'Claude Sonnet 4.6'},
+{v:'claude-sonnet-4.5',l:'Claude Sonnet 4.5'},
+{v:'claude-opus-4.8',l:'Claude Opus 4.8'},
+{v:'gpt-5.4',l:'GPT 5.4'},
+{v:'gpt-5.2',l:'GPT 5.2'},
+{v:'grok-4.6',l:'Grok 4.6'},
+{v:'grok-4.5',l:'Grok 4.5'}
 ];
 function buildPoeOptgroupsHtml(groups,selected){
 var h='',g,m,mo;
@@ -3263,21 +3272,21 @@ return h;
 function fillPoeModelSelect(selectId,groups,defaultModel){
 var el=document.getElementById(selectId);
 if(!el)return;
-var cur=el.value||defaultModel||POE_DEFAULT_MODEL;
+var cur=coercePoeModelId(el.value||defaultModel||POE_DEFAULT_MODEL);
 el.innerHTML=buildPoeOptgroupsHtml(groups,cur);
 if(!el.value)el.value=defaultModel||POE_DEFAULT_MODEL;
 }
 function fillPoeFlatSelect(selectId,models,defaultModel){
 var el=document.getElementById(selectId);
 if(!el)return;
-var cur=el.value||defaultModel||POE_DEFAULT_MODEL;
+var cur=coercePoeModelId(el.value||defaultModel||POE_DEFAULT_MODEL);
 el.innerHTML=buildPoeFlatOptionsHtml(models,cur);
 if(!el.value)el.value=defaultModel||POE_DEFAULT_MODEL;
 }
 function fillPoeWebSearchSelect(selectId,defaultModel){
 var el=document.getElementById(selectId);
 if(!el)return;
-var cur=el.value||defaultModel||POE_DEFAULT_MODEL;
+var cur=coercePoeModelId(el.value||defaultModel||POE_DEFAULT_MODEL);
 el.innerHTML='<optgroup label="🔍 Web Search (Real News)">'+buildPoeFlatOptionsHtml(POE_WEB_SEARCH_MODELS,cur)+'</optgroup>';
 if(!el.value)el.value=defaultModel||POE_DEFAULT_MODEL;
 }
@@ -3288,9 +3297,9 @@ fillPoeModelSelect('destroyModel',POE_MODEL_GROUPS,POE_DEFAULT_MODEL);
 fillPoeModelSelect('yahChatModel',POE_MODEL_GROUPS,POE_DEFAULT_MODEL);
 fillPoeWebSearchSelect('newsModel',POE_DEFAULT_MODEL);
 fillPoeFlatSelect('scriptureFetchModel',POE_SCRIPTURE_FETCH_MODELS,POE_DEFAULT_MODEL);
-fillPoeFlatSelect('apocFetchModel',POE_WEB_SEARCH_MODELS,'Gemini-3.6-Flash');
-fillPoeFlatSelect('sealedFetchModel',POE_WEB_SEARCH_MODELS,'Gemini-3.6-Flash');
-fillPoeFlatSelect('imagePromptModel',POE_IMAGE_PROMPT_MODELS,'Gemini-3.6-Flash');
+fillPoeFlatSelect('apocFetchModel',POE_WEB_SEARCH_MODELS,POE_DEFAULT_MODEL);
+fillPoeFlatSelect('sealedFetchModel',POE_WEB_SEARCH_MODELS,POE_DEFAULT_MODEL);
+fillPoeFlatSelect('imagePromptModel',POE_IMAGE_PROMPT_MODELS,POE_DEFAULT_MODEL);
 if(typeof updateNewsSearchNote==='function')updateNewsSearchNote();
 }
 /* ==========================================
@@ -3298,28 +3307,28 @@ MODEL SELECTOR HELPER
 ========================================== */
 function getSelectedModel(){
 var custom=(document.getElementById('customModelInput').value||'').trim();
-if(custom)return custom;
-return document.getElementById('modelSelect').value||'Gemini-3.6-Flash';
+if(custom)return coercePoeModelId(custom);
+return document.getElementById('modelSelect').value||POE_DEFAULT_MODEL;
 }
 function getImagePromptModel(){
 var custom=(document.getElementById('customImagePromptModel').value||'').trim();
-if(custom)return custom;
-return document.getElementById('imagePromptModel').value||'Gemini-3.6-Flash';
+if(custom)return coercePoeModelId(custom);
+return document.getElementById('imagePromptModel').value||POE_DEFAULT_MODEL;
 }
 function getNewsModel(){
 var custom=(document.getElementById('customNewsModel').value||'').trim();
-if(custom)return custom;
-return document.getElementById('newsModel').value||'Gemini-3.6-Flash';
+if(custom)return coercePoeModelId(custom);
+return document.getElementById('newsModel').value||POE_DEFAULT_MODEL;
 }
 function getDismantleModel(){
 var custom=(document.getElementById('customDismantleModel').value||'').trim();
-if(custom)return custom;
-return document.getElementById('dismantleModel').value||'Gemini-3.6-Flash';
+if(custom)return coercePoeModelId(custom);
+return document.getElementById('dismantleModel').value||POE_DEFAULT_MODEL;
 }
 function getYahChatModel(){
 var custom=(document.getElementById('customYahChatModel').value||'').trim();
-if(custom)return custom;
-return document.getElementById('yahChatModel').value||'Gemini-3.6-Flash';
+if(custom)return coercePoeModelId(custom);
+return document.getElementById('yahChatModel').value||POE_DEFAULT_MODEL;
 }
 function onYahChatModelDropdown(){
 var ci=document.getElementById('customYahChatModel');
@@ -6456,7 +6465,7 @@ el.innerHTML=loadingMsg+'<br><span style="font-size:0.72rem;color:var(--text-dim
 // Timeout after 4 minutes
 var scanTimeout=setTimeout(function(){
 clearInterval(elapsedTimer);
-results.innerHTML='<div class="news-empty"><i class="fas fa-exclamation-triangle"></i><p>Scan timed out after 4 minutes. The model may still be processing. Try again or switch to a faster Poe bot (e.g. <strong>Gemini-3.6-Flash</strong>).</p></div>';
+results.innerHTML='<div class="news-empty"><i class="fas fa-exclamation-triangle"></i><p>Scan timed out after 4 minutes. The model may still be processing. Try again or switch to a faster Poe bot (e.g. <strong>gemini-3.6-flash</strong>).</p></div>';
 resetNewsScanBtn();
 },240000);
 var prompt=buildNewsScanPrompt(selectedNewsCat,customQuery);
@@ -7764,8 +7773,8 @@ saveToLibrary(title,desc,'deception','destroy',model,parts,combined,titles);
 }
 function getDestroyModel(){
 var custom=(document.getElementById('customDestroyModel').value||'').trim();
-if(custom)return custom;
-return document.getElementById('destroyModel').value||'Gemini-3.6-Flash';
+if(custom)return coercePoeModelId(custom);
+return document.getElementById('destroyModel').value||POE_DEFAULT_MODEL;
 }
 function onDestroyModelDropdown(){
 var ci=document.getElementById('customDestroyModel');
