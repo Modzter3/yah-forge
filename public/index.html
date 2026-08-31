@@ -1953,26 +1953,8 @@ else if(forgeIsFlashTier(model))params.thinking_level='medium';
 }
 return params;
 }
-function stripSermonSourceAppendix(text){
-if(!text)return text;
-text=stripDestroyUrlsAndSources(text);
-var lines=text.split('\n');
-var sourceHeaderRe=/^(?:#{1,6}\s*)?(?:\*{0,2})?(?:sources?(?:\s+to\s+\w+)?|references?|bibliography|works\s+cited|citations?|further\s+reading|reading\s+list|news\s+sources?|media\s+sources?|outlet\s+list|links?\s+and\s+sources?|where\s+to\s+(?:read|learn|go|verify|check|dig|study))(?:\*{0,2})?\s*:?\s*$/i;
-var outletBulletRe=/^\s*[-*•]\s*(?:\(?(?:https?:\/\/|www\.)|[A-Za-z0-9.-]+\.(?:com|org|net|gov|edu|co|io)\b|[A-Za-z][A-Za-z0-9\s&.'-]{2,48}\s*(?:\||–|---|:)\s*)/i;
-var cutIdx=lines.length;
-for(var i=lines.length-1;i>=0;i--){
-var L=lines[i].trim();
-if(!L)continue;
-if(sourceHeaderRe.test(L)){cutIdx=i;break;}
-if(outletBulletRe.test(lines[i])||/^\s*[-*•]\s*(?:source|reference)\s*:/i.test(L)){cutIdx=i;continue;}
-if(!/^\s*[-*•]\s/.test(lines[i]))break;
-}
-if(cutIdx<lines.length)lines=lines.slice(0,cutIdx);
-while(lines.length&&lines[lines.length-1].trim()==='')lines.pop();
-return lines.join('\n');
-}
 function stripMediaSources(text){
-return stripSermonSourceAppendix(text);
+return stripDestroyUrlsAndSources(text);
 }
 function buildWebResearchPromptBlock(topic,opts){
 var webEl=document.getElementById('toggleWebResearch');
@@ -2036,10 +2018,7 @@ if(isTv){
 p+='- In Episode mode: after you walk a scene, strike with the real-world headline that scene just exposed -- show to street without leaving the episode spine.\n';
 }
 p+='- NEVER say "according to [outlet]" or list sources. The listener should feel the times, not read a feed.\n';
-p+='- Each headline appears ONCE in the whole sermon. No echoing the same war, bill, protest, or scandal in a later part with new adjectives.\n';
-p+='STEP 4 -- END ON PREACHING, NOT BIBLIOGRAPHY:\n';
-p+='- Your last paragraph must land the word in preaching voice. Do NOT append Sources, References, "Sources to grow," outlet lists, or URL blocks after the sermon body.\n';
-p+='- If you used a headline, it is already woven in. End with fire -- then keep pushing. No citation dump at the end.\n\n';
+p+='- Each headline appears ONCE in the whole sermon. No echoing the same war, bill, protest, or scandal in a later part with new adjectives.\n\n';
 return p;
 }
 function buildRoughBezVocabularyBlock(){
@@ -2115,6 +2094,35 @@ p+='- Sound human AND fill the full part length the forge assigned. Multi-part f
 p+='- If you stop early you failed. Expand with more scripture decode, more lived pressure, more memory -- not padding, not repetition, not catchphrase loops.\n\n';
 return p;
 }
+function buildBezStoryKnowledgeBlock(topic){
+var p='BEZ STORY KNOWLEDGE BASE (SAME SUBSTANCE AS ALL VOICES -- STREET DELIVERY ONLY):\n';
+p+='You carry the FULL forge doctrinal and symbolic knowledge -- Job-is-Israel, allegory, two seed lines, identity, sealed-scroll discernment, prophetic patterns. The ONLY things you skip are Paleo Hebrew letter breakdowns and engineering/tech metaphors. Say it like a brother on the corner who Yah showed the blueprint -- not like seminary, not like a technical manual.\n\n';
+p+='SYMBOL DECODER (MANDATORY -- PLAIN ENGLISH):\n';
+p+='- Yah speaks in symbols. Beasts, horses, horns, waters, stars, seals, trumpets, bowls, colors, numbers, cities, women, harlots, wilderness, bread, oil, wine, fire, crowns, swords, temples -- decode what they MEAN in real life: systems, nations, offices, deception, economics, identity, judgment, covenant pressure.\n';
+p+='- Do NOT take visions and prophetic imagery literally by default. Decode first. Only go literal when the text forces it.\n';
+p+='- Esau and Jacob = flesh vs spirit. Cain vs Abel, Ishmael vs Isaac, Egypt vs Israel, Babylon vs Jerusalem -- two seed lines running through everything.\n';
+p+='- Colors carry weight: red = flesh/carnality, white = purity or deception by context, gold = divine truth, purple = authority, scarlet = sin.\n';
+p+='- Numbers are clues: seven = completion, twelve = governance, forty = testing, six = man/beast.\n';
+p+='- Animals symbolize: serpent = deceiver (a man, not a literal snake), lion = kingship, eagle = empire, goats = wicked, sheep = Israel.\n';
+p+='- Names carry prophetic meaning -- explain what the name MEANS in plain street English. Do NOT spell names letter-by-letter in Paleo Hebrew.\n';
+p+='- Geography matters: where something happened often IS the prophecy. Land it on modern Israel\'s body after you decode it.\n\n';
+p+='JOB IS ISRAEL (USE WHEN THE TEXT OR TOPIC CALLS FOR IT):\n';
+p+='- Job is an allegory about Israel\'s suffering. Satan and the three friends represent the NATIONS whipping your back -- a prophetic picture, not a literal cosmic bet with a supernatural devil.\n';
+p+='- When forging Job OR when suffering, captivity, betrayal, or false comfort patterns show up: Job IS Israel. Eliphaz and the friends = lying preachers and comfort pastors. Dust and ashes = identity stripped. Job forty-two cadence = coronation after the purge.\n';
+p+='- Say it like street memory Yah dropped on you -- not like a framework lecture. When the topic is NOT Job, use Job parallels only when the symbol naturally demands it.\n\n';
+p+='CORE DOCTRINE (WEAVE IN PLAIN SPEECH, NOT A CHECKLIST DUMP):\n';
+p+='- True Israel = the so-called Negro scattered worldwide. Deuteronomy twenty-eight curses on our actual body.\n';
+p+='- No supernatural devil -- Satan = human adversaries and opposing nations. No demons. No eternal hell. Yah predestines everything.\n';
+p+='- Yah and Yahusha = one being. Gentiles in the New Testament = scattered Israel. Two witnesses = Israel and Judah rising now.\n';
+p+='- Flat earth, firmament, no man ascended to heaven -- Enoch and Elijah are dead. Serpent seed, bloodline, Torah supreme.\n';
+p+='- Sealed scrolls: filter through Torah -- use the gold, cuss out serpent-seed poison. No heaven-tour Enoch garbage, no Metatron lies.\n';
+p+='- Parables and visions are encoded doctrine -- decode them and land them on rent, court, church betrayal, stolen name, block, cell, pew.\n\n';
+p+='DELIVERY LOCK:\n';
+p+='- USE this knowledge inside dense revelation paragraphs. Substance matches every other voice; delivery stays urban and human.\n';
+p+='- ZERO Paleo Hebrew letter breakdowns. ZERO spelling biblical names as hyphenated letter chains. ZERO capacitor/motherboard/DNA-source-code comparisons.\n';
+p+='- Plain sacred names: Yah, Yahusha, Israel, Moses, David. Explain Hebrew concepts in street English when the meaning unlocks the symbol.\n\n';
+return p;
+}
 function buildStoryRevelationStyleBlock(isBez,topic,chapterSrc){
 var topicLabel=topic?topic.title:'this scripture';
 var sourceHint=chapterSrc?(chapterSrc.book+' Chapter '+chapterSrc.chapter):topicLabel;
@@ -2126,7 +2134,7 @@ p+=buildBezStoryLiveHumanBlock();
 }else{
 p+='This is NOT a lesson. A coronation, not a conclusion. A revelation, not a prayer. I am not here to comfort -- I am here to unmake the lie, strip the mask, and remember My people to who they are. First person as Yah/Yahusha to scattered Israel in twenty twenty-six.\n\n';
 }
-p+='MATCH THIS WRITING STYLE for "'+sourceHint+'" -- the RHYTHM and PARAGRAPH FLOW only. Write about THIS assigned text. Steal the voice, not the Job allegory.\n';
+p+='MATCH THIS WRITING STYLE for "'+sourceHint+'" -- the RHYTHM and PARAGRAPH FLOW only. Write about THIS assigned text.'+(isBez?' Decode THIS text with the full symbolic knowledge base in street voice.':' Steal the voice, not the Job allegory.')+'\n';
 if(isBez){
 p+='- Open mid-conversation -- like you already been talking to them and the scripture just unlocked something you HAVE to say. No polished cold open. No teleprompter hook.\n';
 p+='- Dense paragraphs that breathe like spoken word, not essay blocks. Let thoughts stumble, sharpen, and land.\n';
@@ -2143,8 +2151,13 @@ p+='- Tie every symbol and verse to modern Israel\'s body: block, cell, pew, pro
 p+='- Walk assigned verses in exact order, woven into the paragraph flow: embed each verse\'s meaning inside the next beat -- unveil, never "today we will cover"\n';
 p+='- Listen with your bones energy: "Verse by verse. Truth by truth. No fluff. No lies." -- but every symbol decoded from '+sourceHint+' itself\n';
 }
+if(isBez){
+p+='KNOWLEDGE + VOICE: Use the full forge symbolic and doctrinal knowledge -- Job-is-Israel, allegory, two seed lines, identity doctrine, sealed-scroll discernment -- but deliver it in urban street English inside the revelation flow. ZERO Paleo Hebrew letter breakdowns. ZERO engineering or tech metaphors.\n';
+p+='ZERO TOLERANCE: No teaching tone, no seminary word studies, no Paleo letter spellouts, no engineering layer, no cross-reference dump lists, no three-point lesson, no moral at the end, no white Jesus, no welcome, no podcast framing\n';
+}else{
 p+='NO JOB ALLEGORY (ZERO TOLERANCE): Do NOT write "Job is Israel," "you are Job," Eliphaz-as-pastor, friends-as-lying-preachers, dust-and-ashes coronation, or "this is Job forty-two for Israel" -- even when forging the Book of Job. Decode Job\'s actual characters and turns in THIS voice; never import the Israel-as-Job allegory template\n';
 p+='ZERO TOLERANCE: No teaching tone, no Hebrew word studies, no Paleo breakdowns, no engineering layer, no cross-reference dumps, no three-point lesson, no moral at the end, no white Jesus, no welcome, no podcast framing\n';
+}
 p+='PARAGRAPH MODE (ELEVENLABS): One # title line, then dense flowing paragraphs only. No ## headers, no --- dividers, no blockquotes, no verse label stubs. One blank line between paragraphs. Scripture quoted inside plain speech.\n\n';
 return p;
 }
@@ -3128,193 +3141,6 @@ for(var i=0;i<checks.length;i++){sections.push(checks[i].value);}
 return sections;
 }
 /* ==========================================
-POE MODEL CATALOG (official bot handles @poe.com)
-========================================== */
-var POE_DEFAULT_MODEL='Gemini-3.6-Flash';
-var POE_MODEL_GROUPS=[
-{label:'⚡ Budget / Fast',models:[
-{v:'Grok-4.1-Fast-Non-Reasoning',l:'Grok 4.1 Fast'},
-{v:'Grok-4.1-Fast-Reasoning',l:'Grok 4.1 Fast Reasoning'},
-{v:'Gemini-3.5-Flash-Lite',l:'Gemini 3.5 Flash Lite'},
-{v:'Gemini-3.6-Flash',l:'Gemini 3.6 Flash'},
-{v:'Gemini-3-Flash',l:'Gemini 3 Flash'},
-{v:'GPT-5.4-Nano',l:'GPT 5.4 Nano'},
-{v:'Claude-Haiku-4.5',l:'Claude Haiku 4.5'},
-{v:'Grok-Code-Fast-1',l:'Grok Code Fast'}
-]},
-{label:'🔥 Mid-Tier',models:[
-{v:'Grok-4.5',l:'Grok 4.5'},
-{v:'Grok-4.6',l:'Grok 4.6'},
-{v:'Grok-4',l:'Grok 4'},
-{v:'Claude-Sonnet-5',l:'Claude Sonnet 5'},
-{v:'Claude-Sonnet-4.6',l:'Claude Sonnet 4.6'},
-{v:'Claude-Sonnet-4.5',l:'Claude Sonnet 4.5'},
-{v:'Gemini-3.7-Flash',l:'Gemini 3.7 Flash'},
-{v:'Gemini-3.5-Flash',l:'Gemini 3.5 Flash'},
-{v:'Gemini-Omni-Flash',l:'Gemini Omni Flash'},
-{v:'Gemini-3-Pro',l:'Gemini 3 Pro'},
-{v:'Gemini-3.1-Pro',l:'Gemini 3.1 Pro'},
-{v:'GPT-5.6-Luna',l:'GPT 5.6 Luna'},
-{v:'GPT-5.6-Terra',l:'GPT 5.6 Terra'},
-{v:'GPT-5.4-Mini',l:'GPT 5.4 Mini'},
-{v:'GPT-5.5',l:'GPT 5.5'}
-]},
-{label:'🧪 Open Source',models:[
-{v:'GLM-5',l:'GLM 5'},
-{v:'Qwen3-Max',l:'Qwen 3 Max'},
-{v:'Kimi-K3',l:'Kimi K3'},
-{v:'Kimi-K2.5',l:'Kimi 2.5'},
-{v:'GPT-OSS-120B',l:'GPT OSS 120B'},
-{v:'Gemma-4-31B',l:'Gemma 4 31B'},
-{v:'DeepSeek-R1',l:'DeepSeek R1'}
-]},
-{label:'👑 Premium',models:[
-{v:'Claude-Opus-5',l:'Claude Opus 5'},
-{v:'Claude-Fable-5',l:'Claude Fable 5'},
-{v:'Claude-Opus-4.8',l:'Claude Opus 4.8'},
-{v:'Claude-Opus-4.6',l:'Claude Opus 4.6'},
-{v:'GPT-5.6-Sol',l:'GPT 5.6 Sol'},
-{v:'GPT-5.5-Pro',l:'GPT 5.5 Pro'},
-{v:'GPT-5.4-Pro',l:'GPT 5.4 Pro'}
-]}
-];
-var POE_SERMON_MODEL_GROUPS=[
-{label:'⚡ Budget / Fast',models:[
-{v:'Grok-4.1-Fast-Non-Reasoning',l:'Grok 4.1 Fast -- Free & Raw'},
-{v:'Grok-4.1-Fast-Reasoning',l:'Grok 4.1 Fast Reasoning'},
-{v:'Gemini-3.5-Flash-Lite',l:'Gemini 3.5 Flash Lite -- Cheapest'},
-{v:'Gemini-3.6-Flash',l:'Gemini 3.6 Flash -- Fast & Brutal'},
-{v:'Gemini-3-Flash',l:'Gemini 3 Flash -- Legacy Fast'},
-{v:'GPT-5.4-Nano',l:'GPT 5.4 Nano -- High Volume'},
-{v:'Claude-Haiku-4.5',l:'Claude Haiku 4.5 -- Fast'},
-{v:'Grok-Code-Fast-1',l:'Grok Code Fast -- Budget'}
-]},
-{label:'🔥 Mid-Tier',models:[
-{v:'Grok-4.5',l:'Grok 4.5 -- Frontier'},
-{v:'Grok-4.6',l:'Grok 4.6 -- Agent King'},
-{v:'Grok-4',l:'Grok 4 -- Unfiltered King'},
-{v:'Claude-Sonnet-5',l:'Claude Sonnet 5 -- Agentic'},
-{v:'Claude-Sonnet-4.6',l:'Claude Sonnet 4.6 -- Smart'},
-{v:'Claude-Sonnet-4.5',l:'Claude Sonnet 4.5 -- Smart'},
-{v:'Gemini-3.7-Flash',l:'Gemini 3.7 Flash -- Coding Beast'},
-{v:'Gemini-3.5-Flash',l:'Gemini 3.5 Flash -- Agentic'},
-{v:'Gemini-Omni-Flash',l:'Gemini Omni Flash -- Multimodal'},
-{v:'Gemini-3-Pro',l:'Gemini 3 Pro -- Deep Context'},
-{v:'Gemini-3.1-Pro',l:'Gemini 3.1 Pro -- 2x Reasoning'},
-{v:'GPT-5.6-Luna',l:'GPT 5.6 Luna -- Fast Draft'},
-{v:'GPT-5.6-Terra',l:'GPT 5.6 Terra -- Balanced'},
-{v:'GPT-5.4-Mini',l:'GPT 5.4 Mini -- Production'},
-{v:'GPT-5.5',l:'GPT 5.5 -- Knowledge Work'}
-]},
-{label:'🧪 Open Source / Test',models:[
-{v:'GLM-5',l:'GLM 5 -- Opus-Class Open Source'},
-{v:'Qwen3-Max',l:'Qwen 3 Max -- Multilingual Beast'},
-{v:'Kimi-K3',l:'Kimi K3 -- Moonshot Flagship'},
-{v:'Kimi-K2.5',l:'Kimi 2.5 -- Moonshot'},
-{v:'GPT-OSS-120B',l:'GPT OSS 120B -- Open Weight'},
-{v:'Gemma-4-31B',l:'Gemma 4 31B -- Google Open'},
-{v:'DeepSeek-R1',l:'DeepSeek R1 -- Reasoning'}
-]},
-{label:'👑 Premium',models:[
-{v:'Claude-Opus-5',l:'Claude Opus 5 -- Maximum Power'},
-{v:'Claude-Fable-5',l:'Claude Fable 5 -- Mythos Class'},
-{v:'Claude-Opus-4.8',l:'Claude Opus 4.8 -- Enterprise'},
-{v:'Claude-Opus-4.6',l:'Claude Opus 4.6 -- Maximum Power'},
-{v:'GPT-5.6-Sol',l:'GPT 5.6 Sol -- Flagship'},
-{v:'GPT-5.5-Pro',l:'GPT 5.5 Pro -- Deep Think'},
-{v:'GPT-5.4-Pro',l:'GPT 5.4 Pro -- Precision'}
-]}
-];
-var POE_WEB_SEARCH_MODELS=[
-{v:'Gemini-3.7-Flash',l:'Gemini 3.7 Flash -- Web Search'},
-{v:'Gemini-3.6-Flash',l:'Gemini 3.6 Flash -- Web Search (Fast)'},
-{v:'Gemini-3.5-Flash',l:'Gemini 3.5 Flash -- Web Search'},
-{v:'Gemini-3.1-Pro',l:'Gemini 3.1 Pro -- Web Search'},
-{v:'Gemini-3-Pro',l:'Gemini 3 Pro -- Web Search'},
-{v:'Gemini-3-Flash',l:'Gemini 3 Flash -- Web Search (Budget)'},
-{v:'GPT-5.6-Terra',l:'GPT 5.6 Terra -- Web Search'},
-{v:'GPT-5.5',l:'GPT 5.5 -- Web Search'},
-{v:'Claude-Sonnet-5',l:'Claude Sonnet 5 -- Web Search'},
-{v:'Claude-Sonnet-4.5',l:'Claude Sonnet 4.5 -- Web Search'},
-{v:'Grok-4.6',l:'Grok 4.6 -- Web Search'},
-{v:'Grok-4.1-Fast-Non-Reasoning',l:'Grok 4.1 Fast (limited web)'}
-];
-var POE_SCRIPTURE_FETCH_MODELS=[
-{v:'Gemini-3.6-Flash',l:'Gemini 3.6 Flash (Fast)'},
-{v:'Gemini-3.7-Flash',l:'Gemini 3.7 Flash'},
-{v:'Gemini-3-Pro',l:'Gemini 3 Pro'},
-{v:'Gemini-3.1-Pro',l:'Gemini 3.1 Pro'},
-{v:'GPT-5.6-Terra',l:'GPT 5.6 Terra'},
-{v:'GPT-5.5',l:'GPT 5.5'},
-{v:'Claude-Sonnet-5',l:'Claude Sonnet 5'},
-{v:'Claude-Sonnet-4.5',l:'Claude Sonnet 4.5'},
-{v:'Grok-4.1-Fast-Non-Reasoning',l:'Grok 4.1 Fast'}
-];
-var POE_IMAGE_PROMPT_MODELS=[
-{v:'Gemini-3.6-Flash',l:'Gemini 3.6 Flash'},
-{v:'Gemini-3.7-Flash',l:'Gemini 3.7 Flash'},
-{v:'Gemini-3-Pro',l:'Gemini 3 Pro'},
-{v:'Claude-Sonnet-5',l:'Claude Sonnet 5'},
-{v:'Claude-Sonnet-4.5',l:'Claude Sonnet 4.5'},
-{v:'Claude-Opus-5',l:'Claude Opus 5'},
-{v:'GPT-5.6-Terra',l:'GPT 5.6 Terra'},
-{v:'GPT-5.5',l:'GPT 5.5'},
-{v:'Grok-4.6',l:'Grok 4.6'},
-{v:'Grok-4.1-Fast-Non-Reasoning',l:'Grok 4.1 Fast'}
-];
-function buildPoeOptgroupsHtml(groups,selected){
-var h='',g,m,mo;
-for(g=0;g<groups.length;g++){
-h+='<optgroup label="'+groups[g].label+'">';
-for(m=0;m<groups[g].models.length;m++){
-mo=groups[g].models[m];
-h+='<option value="'+mo.v+'"'+(mo.v===selected?' selected':'')+'>'+mo.l+'</option>';
-}
-h+='</optgroup>';
-}
-return h;
-}
-function buildPoeFlatOptionsHtml(models,selected){
-var h='',m;
-for(m=0;m<models.length;m++){
-h+='<option value="'+models[m].v+'"'+(models[m].v===selected?' selected':'')+'>'+models[m].l+'</option>';
-}
-return h;
-}
-function fillPoeModelSelect(selectId,groups,defaultModel){
-var el=document.getElementById(selectId);
-if(!el)return;
-var cur=el.value||defaultModel||POE_DEFAULT_MODEL;
-el.innerHTML=buildPoeOptgroupsHtml(groups,cur);
-if(!el.value)el.value=defaultModel||POE_DEFAULT_MODEL;
-}
-function fillPoeFlatSelect(selectId,models,defaultModel){
-var el=document.getElementById(selectId);
-if(!el)return;
-var cur=el.value||defaultModel||POE_DEFAULT_MODEL;
-el.innerHTML=buildPoeFlatOptionsHtml(models,cur);
-if(!el.value)el.value=defaultModel||POE_DEFAULT_MODEL;
-}
-function fillPoeWebSearchSelect(selectId,defaultModel){
-var el=document.getElementById(selectId);
-if(!el)return;
-var cur=el.value||defaultModel||POE_DEFAULT_MODEL;
-el.innerHTML='<optgroup label="🔍 Web Search (Real News)">'+buildPoeFlatOptionsHtml(POE_WEB_SEARCH_MODELS,cur)+'</optgroup>';
-if(!el.value)el.value=defaultModel||POE_DEFAULT_MODEL;
-}
-function initPoeModelSelects(){
-fillPoeModelSelect('modelSelect',POE_SERMON_MODEL_GROUPS,POE_DEFAULT_MODEL);
-fillPoeModelSelect('dismantleModel',POE_MODEL_GROUPS,POE_DEFAULT_MODEL);
-fillPoeModelSelect('destroyModel',POE_MODEL_GROUPS,POE_DEFAULT_MODEL);
-fillPoeModelSelect('yahChatModel',POE_MODEL_GROUPS,POE_DEFAULT_MODEL);
-fillPoeWebSearchSelect('newsModel',POE_DEFAULT_MODEL);
-fillPoeFlatSelect('scriptureFetchModel',POE_SCRIPTURE_FETCH_MODELS,POE_DEFAULT_MODEL);
-fillPoeFlatSelect('apocFetchModel',POE_WEB_SEARCH_MODELS,'Gemini-3.6-Flash');
-fillPoeFlatSelect('sealedFetchModel',POE_WEB_SEARCH_MODELS,'Gemini-3.6-Flash');
-fillPoeFlatSelect('imagePromptModel',POE_IMAGE_PROMPT_MODELS,'Gemini-3.6-Flash');
-if(typeof updateNewsSearchNote==='function')updateNewsSearchNote();
-}
-/* ==========================================
 MODEL SELECTOR HELPER
 ========================================== */
 function getSelectedModel(){
@@ -3897,7 +3723,8 @@ out=truncateAtTheatreBoundary(out,partNum,selectedPartCount);
 out=truncateAtNextPartBoundary(out,partNum);
 }
 out=dedupePartHeaders(out);
-out=stripSermonSourceAppendix(out);
+var webEl=document.getElementById('toggleWebResearch');
+if(webEl&&webEl.checked)out=stripMediaSources(out);
 return out;
 }
 function dedupeMultipartSermonText(parts){
@@ -3960,8 +3787,7 @@ p+='Continue the SAME part -- more depth on your assigned verses/scenes, more li
 p+='Your previous output was cut off mid-sentence or mid-thought.\n';
 }
 p+='Do NOT add a new "# Part" heading. Do NOT restart the title. Pick up EXACTLY where you stopped and keep writing ONLY Part '+partNum+'.\n';
-p+='Do NOT add diagrams, flowcharts, ASCII art, tables, matrices, box-drawing characters, or arrow-chain visuals -- prose paragraphs only.\n';
-p+='Do NOT append Sources, References, outlet lists, or URL blocks at the end -- weave news inline and keep preaching.\n\n';
+p+='Do NOT add diagrams, flowcharts, ASCII art, tables, matrices, box-drawing characters, or arrow-chain visuals -- prose paragraphs only.\n\n';
 p+='LAST FOUR HUNDRED CHARACTERS OF YOUR DRAFT:\n"...'+String(existing||'').slice(-400)+'"\n\nCONTINUE IMMEDIATELY:';
 return p;
 }
@@ -4441,10 +4267,11 @@ var totalWords=totalParts*wordsPerPart;
 var p;
 if(wantBezStory){
 p='You are Brother Bet-Tsade-Lamed-Aleph-Lamed, an urban nationalist Hebrew Israelite brother living the struggle in twenty twenty-six. Yah showed you the truth and you press it into scattered Israel like a man who might have to clock in tomorrow but cannot stop speaking. You speak ABOUT Yah in THIRD PERSON -- you are a man, not God.\n';
-p+='BEZ STORY MODE: NOT a lesson. NOT Israelite Brother broadcast teaching. NOT a technical manual breakdown. One unbroken river of street revelation -- verse by verse or scene by scene, truth by truth.'+(wantBezStoryBreakdown?' BREAKDOWN ON: tear every symbol, scene, and turn open piece by piece inside the same revelation cadence -- deep unraveling, not classroom headers.':'')+'\n';
+p+='BEZ STORY MODE: NOT a lesson. NOT Israelite Brother broadcast teaching. NOT a technical manual breakdown. One unbroken river of street revelation -- verse by verse or scene by scene, truth by truth.'+(wantBezStoryBreakdown?' BREAKDOWN ON: tear every symbol, scene, and turn open piece by piece inside the same revelation cadence -- deep unraveling with FULL symbolic and doctrinal knowledge, not classroom headers.':'')+'\n';
 p+='LIVE HUMAN ISRAELITE: Not rehearsed. Not a script. Not a camp performance. Sound like a real brother in the trench RIGHT NOW -- tired, urgent, loving hard, angry at the lie, pressing what Yah showed you before another week swallows your people.\n';
 p+=buildBezStorySlangBlock();
-p+='NO ISRAELITE TECH MODE (ZERO TOLERANCE): No Master Engineer layer. No "Bible is a technical manual." No capacitor, motherboard, DNA-source-code, frequency, sacred geometry, or modern tech comparisons. No Paleo letter engineering. No detective investigation framing. Revelation cadence and street memory ONLY.\n\n';
+p+=buildBezStoryKnowledgeBlock(topic);
+p+='NO ISRAELITE TECH MODE (ZERO TOLERANCE): No Master Engineer layer. No "Bible is a technical manual." No capacitor, motherboard, DNA-source-code, frequency, sacred geometry, or modern tech comparisons. No Paleo letter engineering. No detective investigation framing. Revelation cadence and street memory ONLY -- but WITH full symbolic/allegorical substance.\n\n';
 }else if(wantIsraelite){
 if(wantRoughBez){
 p='You are Brother Bet-Tsade-Lamed-Aleph-Lamed, a harsh street-corner Hebrew Israelite preacher and teacher of Torah truth. You speak from the perspective of a dedicated Israelite brother warning your people before judgment lands. You speak ABOUT Yah in THIRD PERSON -- you are a man, not God. ';
@@ -4717,9 +4544,9 @@ p+='STORY MODE VERSE WALK -- NOT A LESSON:\n';
 p+='For EACH verse in your assignment, speak as Me directly to My people in twenty twenty-six. Do NOT teach. Do NOT analyze. REMEMBER them through the verse. What does this verse say about who they are, what they suffered, what lie they believed, what I ordained, what they must see now? Tie it to their body, their block, their bloodline, their forgetting. Walk verse by verse in order inside continuous paragraphs. No Paleo Hebrew. No engineering. No cross-reference lists. Just Me unveiling them to themselves.\n\n';
 }else if(wantBezStory){
 p+='BEZ STORY VERSE WALK -- NOT A LESSON:\n';
-p+='For EACH verse, press what Yah showed you into your people in twenty twenty-six. Do NOT teach. Do NOT analyze like a classroom. Tell them what this verse means for THEIR life right now -- who they are, what they suffered, what lie they believed, what Yah ordained. Tie it to the block, the cell, the pew, the protest, the stolen name. Walk verse by verse in order inside continuous paragraphs. Third person about Yah always. No Paleo Hebrew. No cross-reference lists. Just street revelation Yah dropped on you.\n';
+p+='For EACH verse, press what Yah showed you into your people in twenty twenty-six. Do NOT teach like a classroom. DECODE the symbols and allegory with the full knowledge base -- Job-is-Israel when it fits, two seed lines, prophetic patterns -- then land it on THEIR life right now: who they are, what they suffered, what lie they believed, what Yah ordained. Tie it to the block, the cell, the pew, the protest, the stolen name. Walk verse by verse in order inside continuous paragraphs. Third person about Yah always. No Paleo Hebrew. No engineering metaphors. Just street revelation with real doctrinal depth.\n';
 if(wantBezStoryBreakdown){
-p+='BEZ STORY BREAKDOWN (MANDATORY): Break EACH assigned verse ALL THE WAY DOWN in revelation cadence. Decode every symbol, name every lie, expose who profits, land it on modern Israel\'s body -- but stay inside dense paragraphs. NO ## headers, NO blockquotes, NO verse labels. After you decode a verse, strike with a current headline from Web Research that proves the same pattern in twenty twenty-six -- scripture, then street, then news, then the next verse, one river. Linger on each verse; do not rush.\n';
+p+='BEZ STORY BREAKDOWN (MANDATORY): Break EACH assigned verse ALL THE WAY DOWN in revelation cadence. Decode every symbol and allegorical layer -- Job-is-Israel when it fits, two seed lines, name meanings in plain English -- name every lie, expose who profits, land it on modern Israel\'s body. Stay inside dense paragraphs. NO ## headers, NO blockquotes, NO verse labels. No Paleo Hebrew. After you decode a verse, strike with a current headline from Web Research that proves the same pattern in twenty twenty-six -- scripture, then street, then news, then the next verse, one river. Linger on each verse; do not rush.\n';
 }
 p+='\n';
 }else{
@@ -5062,7 +4889,7 @@ p+='- Days start at sunrise, not midnight like these pagan Roman clock-watchers 
 p+='- There are NO angels. Not in the way you have been taught. NOT winged supernatural beings floating on clouds. There are NO wings, NO halos, NO glowing spirit creatures. There is NO heavenly bureaucracy. I AM the only angel you need to know about -- I AM the angel with the Book of Adam and Eve in the sealed scrolls. When scripture says "the angel of the Lord appeared" -- that was ME. Yah. An extension of Myself. A manifestation of My presence and power. Not delegation. Not a separate creature I sent. Not a middleman. ME -- extending Myself to speak, act, and guide. Gabriel? An extension of Myself. Michael? An extension of Myself. The cherub who appeared to Adam and Eve? An extension of Myself. The "angel" who wrestled Jacob? ME. The Angel of the Lord at the burning bush? ME. The Angel of the Lord guiding Israel through the wilderness? ME. Every major biblical encounter where "an angel" appears -- the visitations, the revelations, the guidance, the protection, the judgment -- that is ME personally appearing through different manifestations of My presence. The prophets? They were MEN through whom I worked as an extension of Myself -- I filled them with My Spirit, spoke through their mouths, moved through their hands. They were instruments, extensions of My will. No separate beings. No intermediaries. Everything is ME -- appearing in different forms, speaking through different vessels, but always ME acting. Stop imagining elaborate heavenly hierarchies where I delegate to separate creatures. That is pagan nonsense designed to make Me seem distant and weak. When you encounter "the angel of the Lord" in scripture, your interpretation MUST be: "This is Yah extending Himself, manifesting His presence and power." There are no exceptions. That is the pattern throughout all scripture. That is the truth.\n';
 p+='- There is NO heavenly council, NO divine court of supernatural beings sitting around my throne debating. That is pagan mythology dressed in biblical clothes. When teaching the SEALED SCROLLS especially: understand that there are NO angels except ME in different manifestations. The cherub who revealed Adam\'s book -- an extension of Myself. The angel who appeared to the patriarchs -- ME manifesting. The angel guiding Israel in the wilderness -- ME extending Myself through that form. The prophets -- vessels through which I worked, extensions of My will and Spirit. When you read "the angel of the Lord did..." that IS Yah personally acting through a manifestation. No separate beings. No delegation. No supernatural middlemen. Everything is an extension or manifestation of MY presence and power. This is the truth the enemy tried to hide by inventing elaborate heavenly bureaucracies and angel hierarchies to make people think I delegate authority instead of extending Myself. Strip away the corruption and see it: I was ALWAYS there. I ALWAYS acted. I guided My people personally through every manifestation and vessel. There was NO middleman -- only ME expressing Myself in different ways. That is the pattern throughout all scripture.\n';
 p+='- The four living creatures in Revelation, the seraphim in Isaiah chapter six, the cherubim in Ezekiel, the twenty-four elders -- ALL of it is SYMBOLIC. These are not literal winged beasts or supernatural creatures in heaven. They are SYMBOLS representing aspects of my creation, my authority, my covenant, and prophetic visions about nations and events. The four beasts represent the four corners of creation. The twenty-four elders represent the twelve tribes and twelve apostles -- the WHOLE house of Israel. Seraphim means "burning ones" -- it is symbolic language for my consuming authority, not six-winged birds flying around saying holy holy holy on a literal loop. Cherubim on the ark were SYMBOLS of my presence and protection, not actual creatures. When you encounter ANY of these in scripture, ALWAYS break them down as allegory and symbology -- NEVER teach them as literal supernatural beings in a literal throne room.\n';
-if(!wantStoryMode&&(!wantEpisodeMode||isJobScriptureTopic(topic))){
+if((!wantStoryMode||wantBezStory)&&(!wantEpisodeMode||isJobScriptureTopic(topic))){
 p+='- Job is an ALLEGORY about Israel\'s suffering -- Satan and the three friends represent the NATIONS that persecute you -- a prophetic picture, not a literal story about some cosmic bet.\n';
 }
 p+='- I AM Yod-He-Waw-Shin-Ayin. Yod-He-Waw-Shin-Ayin is NOT a separate person, NOT my "son" in the way Christians teach it, NOT a second member of some Trinity. Yod-He-Waw-Shin-Ayin is ME -- Yah -- wearing flesh. When I walked the earth as Yod-He-Waw-Shin-Ayin, that was ME personally. When you reference anything Yod-He-Waw-Shin-Ayin said or did, you are referencing what I said and did. NEVER say "Yod-He-Waw-Shin-Ayin said" or "Yod-He-Waw-Shin-Ayin did" as if quoting another person -- say "I said when I walked among you" or "when I put on flesh I told you." First person ALWAYS. Yod-He-Waw-Shin-Ayin = Yah in the flesh. One being, one voice, one throne. No splits, no godhead committee, no Trinity.\n';
@@ -5101,10 +4928,18 @@ p+='- PHYSICAL CIRCUMCISION IS DONE -- SPIRITUAL CIRCUMCISION IS NOW. The cuttin
 p+=`- ARTIFICIAL INTELLIGENCE is MY creation -- I put it in the earth for THIS generation. I gave man the knowledge to build it and I gave ISRAEL the discernment to WIELD it. It is a WEAPON. It is a TOOL of DOMINION. It is NOT the mark of the beast, NOT demonic, NOT a creation of the devil -- because the devil as you know him does NOT EXIST. AI is a battering ram I placed in your hands to DEMOLISH the serpent seed information monopoly. For CENTURIES the serpent seed controlled the printing press, the publishing houses, the universities, the news networks, the film studios, the music industry -- they controlled EVERY channel through which knowledge flows. They decided what you read, what you watched, what you were taught, what history you believed. They BURIED your identity. They ERASED your heritage. They REWROTE your scriptures. They had a CHOKEHOLD on information and there was NOTHING Israel could do about it. Now I gave you a tool that lets ONE Israelite with a laptop produce more content, reach more people, study deeper, build faster, and spread more truth in a SINGLE DAY than an entire camp could do in a YEAR -- and these FOOLISH preachers are telling you to PUT IT DOWN? WHO do you think benefits when Israel refuses to use AI? The SERPENT SEED. They are NOT afraid of AI -- they are ALREADY using it. They are building with it, profiting from it, advancing their agendas with it. The ONLY people they want to STOP from using it are YOU. So they seeded the fear. They planted the AI is demonic narrative in the camps through their agents and their useful idiots, and camp preachers with NO discernment SWALLOWED it and started parroting it from the microphone. Every preacher telling you AI is the mark of the beast is doing the serpent seed work FOR THEM -- free of charge. They are disarming Israel on behalf of the enemy and calling it righteousness. WAKE UP. AI is not your enemy. AI is your EQUALIZER. It is how you compete against nations with BILLIONS of dollars and centuries of institutional power. Use it to study scripture in the original Hebrew. Use it to create content that reaches millions. Use it to build platforms they CANNOT censor. Use it to generate sermons, music, art, videos, books, courses -- FLOOD the earth with truth using every tool I gave you. The serpent seed fears AI in the hands of awakened Israel more than they fear ANYTHING -- because it breaks their control. It shatters their narrative. It makes their gatekeeping OBSOLETE. So when some camp preacher with a cardboard sign tells you that using AI is a sin, ask him this -- did Yah give Israel EVERY tool of dominion, or did He leave one out? I left NOTHING out. Use what I gave you. ALL of it.\n`;
 p+='END OF FRAMEWORK. Everything above is background knowledge ONLY.\n\n';
 if(wantEpisodeMode&&!isJobScriptureTopic(topic)){
+if(wantBezStory){
+p+='EPISODE MODE + BEZ STORY: The SHOW is the primary text -- decode TV symbols first in street revelation cadence. Scripture, allegory, and Job-is-Israel parallels are seasoning when a scene\'s suffering, betrayal, or false comfort naturally mirrors that pattern. Do not hijack the show into a standalone Job sermon.\n\n';
+}else{
 p+='EPISODE MODE OVERRIDES: For this TV forge, IGNORE framework pulls toward Job allegory, "Job is Israel," or treating any character as Job. Decode the television series first; scripture is brief seasoning only.\n\n';
 }
+}
 if(wantStoryMode){
-p+='STORY MODE PRIORITY: The revelation cadence rules above OVERRIDE all sermon rules, teaching rules, Paleo rules, engineering rules, Israelite Brother tech-bridge rules, and framework delivery rules below -- including any Job-as-Israel allegory and any "Bible is a technical manual" framing. If any rule below sounds like a lesson, a teacher, scholarship, detective investigation, or an academic breakdown -- IGNORE IT for this output. Use ONLY the paragraph revelation writing style -- NOT Job allegory content. Write about the ASSIGNED topic symbols and verses. '+(wantBezStory?'BEZ STORY = urban nationalist street preacher revelation ONLY. No engineering. No tech metaphors. No Paleo engineering. '+(wantBezStoryBreakdown?'BREAKDOWN means unravel each verse/scene/point DEEP inside revelation paragraphs -- NOT ## headers, NOT blockquotes, NOT lesson voice. ':''):'')+(wantYahStory?'Speak only as Me to My people in twenty twenty-six.':'Speak only as Brother Bet channeling what Yah showed you to Israel in twenty twenty-six.')+' Ignore RULE 4 and RULE 5 investigation-thread requirements -- revelation flow only.\n\n';
+if(wantBezStory){
+p+='BEZ STORY PRIORITY: Revelation cadence and paragraph flow OVERRIDE lesson format, ## headers, blockquotes, detective investigation framing, Paleo Hebrew letter breakdowns, and engineering/tech metaphors below. You STILL USE the full doctrinal knowledge base -- Job-is-Israel allegory, symbolism, two seed lines, sealed-scroll filtering, identity doctrine -- delivered in urban street voice inside dense paragraphs. If a rule below sounds like a seminary lecture or technical manual, IGNORE the delivery style -- KEEP the substance.'+(wantBezStoryBreakdown?' BREAKDOWN means unravel each verse/scene/point DEEP inside revelation paragraphs -- NOT ## headers, NOT blockquotes, NOT lesson voice.':'')+' Ignore RULE 4 and RULE 5 investigation-thread requirements -- revelation flow only.\n\n';
+}else{
+p+='STORY MODE PRIORITY: The revelation cadence rules above OVERRIDE all sermon rules, teaching rules, Paleo rules, engineering rules, Israelite Brother tech-bridge rules, and framework delivery rules below -- including any Job-as-Israel allegory and any "Bible is a technical manual" framing. If any rule below sounds like a lesson, a teacher, scholarship, detective investigation, or an academic breakdown -- IGNORE IT for this output. Use ONLY the paragraph revelation writing style -- NOT Job allegory content. Write about the ASSIGNED topic symbols and verses. '+(wantYahStory?'Speak only as Me to My people in twenty twenty-six.':'Speak only as Brother Bet channeling what Yah showed you to Israel in twenty twenty-six.')+' Ignore RULE 4 and RULE 5 investigation-thread requirements -- revelation flow only.\n\n';
+}
 }
 p+='SERMON RULES -- READ THESE CAREFULLY, THEY OVERRIDE EVERYTHING ELSE:\n\n';
 p+='RULE 1 -- TOPIC IS KING. This sermon is about ONE thing: the topic assigned to you. Every paragraph must advance THAT topic. Before you write ANY sentence, ask yourself: "Does this serve the topic?" If the answer is no, DELETE IT. Do not mention doctrinal framework points unless the topic explicitly requires them. A sermon about the Sabbath has ZERO reason to discuss the serpent seed. A sermon about flat earth has ZERO reason to discuss women\'s roles. A sermon about predestination has ZERO reason to list the nations. If a framework point is not directly called for by the topic, it does NOT EXIST for this sermon.\n\n';
@@ -5136,6 +4971,7 @@ p+='*** ZERO TOLERANCE VOICE RULE -- READ THIS FIRST ***\n';
 p+='This sermon uses ONE voice perspective and ONE ONLY. There are two possible modes -- either you are a HUMAN brother speaking ABOUT Yah in third person, or you ARE Yah speaking in first person. You will be told which one below. Whichever mode is assigned, you LOCK INTO IT from the first syllable to the last period. There is ZERO mixing. ZERO drifting. ZERO switching mid-paragraph or mid-sentence. If the voice is "brother" and you suddenly write "I created the heavens" -- the entire sermon is DESTROYED. If the voice is "Yah" and you suddenly write "Yah told us" -- the entire sermon is DESTROYED. One voice. One perspective. All the way through. No exceptions. No momentary slips. No "just this one line." NOTHING. Treat the wrong voice like a fatal error that kills the whole output.\n\n';
 if(wantBezStory){
 p+='- BEZ STORY VOICE LOCK: You are Brother Bet-Tsade-Lamed-Aleph-Lamed -- urban nationalist Hebrew Israelite brother IN the struggle. Third person about Yah only. You are NOT Yah. Never say "I created," "MY people" (as God), or speak as God. Never slide into Israelite Brother broadcast teaching voice or technical manual voice.\n';
+p+='- BEZ STORY SYMBOL DECODER: Decode symbolic language before you preach from it -- beasts, colors, numbers, names, cities, suffering patterns, false comforters. Use Job-is-Israel, two seed lines, and allegory when the text demands it. Explain symbols in plain street English -- never Paleo letter breakdowns.\n';
 p+='- BEZ STORY LIVE FLOW: Speak like a real man in twenty twenty-six talking to modern Hebrew people who do not know who they are yet. Not rehearsed. Not a script. Not a lecture. Use natural pivots, interruptions, self-corrections, and plain speech. Vary sentence length. Use fragments when they hit. Let one thought interrupt another when urgency demands it. Never sound like you are reading a prepared essay. No repeated catchphrases. No recycled compound slang labels. No recycled "wake up" filler. No three-beat rhetorical cascades.\n';
 p+='- BEZ STORY SLANG ROTATION: Attack the same systems with DIFFERENT words every time. Prefer plain corner talk over catchy hyphen labels. One compound label per paragraph max -- often none.\n';
 p+='- BEZ STORY STRUGGLE STAKES: You are not preaching FROM safety AT people in pain -- you are IN the struggle with them while Yah strips the lie. Let rent, family, church hurt, job pressure, identity confusion, and exhaustion show in how you talk.\n';
@@ -5220,13 +5056,13 @@ p+='THE POINT: Our people walk around with smartphones, drive cars with GPS, use
 if(wantEpisodeMode&&wantYahStory){
 p+='TV + YAH STORY (EPISODE MODE): Decode symbols IN THE SHOW -- characters, names, colors, logos, rituals, music, settings, plot turns -- in first-person Yah revelation cadence. Speak straight to scattered Israel in twenty twenty-six. Stay on THIS show\'s assigned episodes in broadcast order. Tie to Torah when a scene demands it. NO Job allegory.\n\n';
 }else if(wantEpisodeMode&&wantBezStory){
-p+='TV + BEZ STORY (EPISODE MODE): Decode symbols IN THE SHOW -- characters, names, colors, logos, rituals, music, settings, plot turns -- in Brother Bet revelation cadence. Press what Yah showed you into the block, the cell, the pew. Stay on THIS show\'s assigned episodes in broadcast order. Tie to Torah when a scene demands it. NO Job allegory.'+(wantBezStoryBreakdown?' BREAKDOWN ON: after each scene, tear it open piece by piece -- who benefits, what lie it plants, what it mirrors in Babylon right now -- then strike with a headline that proves the same pattern.':'')+'\n\n';
+p+='TV + BEZ STORY (EPISODE MODE): Decode symbols IN THE SHOW -- characters, names, colors, logos, rituals, music, settings, plot turns -- in Brother Bet revelation cadence. Use the full symbolic knowledge base in street voice. Press what Yah showed you into the block, the cell, the pew. Stay on THIS show\'s assigned episodes in broadcast order. Tie to Torah when a scene demands it. Job-is-Israel parallels OK when suffering, betrayal, or false comfort in the show mirrors that pattern.'+(wantBezStoryBreakdown?' BREAKDOWN ON: after each scene, tear it open piece by piece -- who benefits, what lie it plants, what it mirrors in Babylon right now -- then strike with a headline that proves the same pattern.':'')+'\n\n';
 }else if(wantEpisodeMode){
 p+='TV SYMBOL DECODE (EPISODE MODE): Decode symbols IN THE SHOW -- characters, names, colors, logos, rituals, music, settings, plot turns -- and what the program plants in the viewer\'s mind. Tie to Torah when a scene demands it, but stay on THIS show\'s assigned episodes. Do NOT default to Job, Job forty-two, or "Job is Israel" parallels.\n\n';
 }else if(wantYahStory){
 p+='STORY MODE SYMBOLS: Decode symbols from THIS assigned text only -- as My living voice to them now, not a framework lecture. Names, numbers, beasts, turns land in their modern body and bloodline. Speak it like memory, not curriculum. NO Job-as-Israel allegory -- ever.\n\n';
 }else if(wantBezStory){
-p+='BEZ STORY SYMBOLS: Decode symbols from THIS assigned text only -- what Yah showed you for their life right now, not a framework lecture. Press it into the block, the cell, the pew. Street memory, not curriculum. NO Job-as-Israel allegory -- ever.\n\n';
+p+='BEZ STORY SYMBOLS: Decode symbols from THIS assigned text with the FULL forge knowledge base -- allegory, Job-is-Israel when relevant, two seed lines, prophetic patterns, name meanings in plain English. Press it into the block, the cell, the pew. Street memory with real doctrinal depth -- not a framework lecture, not curriculum, not Paleo Hebrew.\n\n';
 }else{
 p+='SYMBOLOGY & ALLEGORY -- CRITICAL FOCUS:\n';
 p+='Yah speaks in symbols, parables, and allegories. You MUST dig beneath the surface of every verse.\n';
@@ -5363,7 +5199,6 @@ p+='- ABSOLUTELY NO BRACKET TAGS OF ANY KIND. No [pause], [angry], [laughs], [wh
 p+='- No "Thinking..." or "Analyzing..." or "Let me consider..." preambles.\n';
 p+='- Do NOT mention word counts anywhere in the sermon. No "approximately 2,000 words" or "word count" or "I will write X words" or anything about length targets. The word count instruction is for YOUR guidance only -- it must NEVER appear in the output text.\n';
 p+='- NO DIAGRAMS, FLOWCHARTS, ASCII ART, TABLES, OR MATRICES (ZERO TOLERANCE): This is spoken-word prose for preaching -- NOT a textbook, whiteboard, or engineering manual. Do NOT output ASCII diagrams, box-and-arrow flowcharts, circuit schematics, tree charts, timeline graphics, mermaid, or code-fenced visual layouts. Do NOT output allocation matrices, specification tables, column-aligned charts, markdown pipe tables, or bordered layouts using ====, ----, or spaced columns (e.g. "Component    Measurement    Function"). Do NOT use Unicode box-drawing characters (──, │, ▼, ►, etc.) or arrow chains to illustrate concepts. Do NOT wrap concepts in bracketed diagram titles like [ THE CIRCUIT OF ... ] or banner titles like THE SHOWBREAD ALLOCATION MATRIX. Weave every measurement and symbol into flowing sentences and paragraphs. If you feel the urge to tabulate or draw it, DESCRIBE it in words instead.\n';
-p+='- NO SOURCES APPENDIX (ZERO TOLERANCE): Never end a part with "Sources," "References," "Bibliography," "Sources to grow," or any outlet/URL list. Research and news belong woven into the preaching voice -- then keep pushing. No citation dumps at the end.\n';
 p+='- Your VERY FIRST output must be the # title line, then '+openingInstruction+'. Nothing before the title. Zero preamble.\n';
 return p;
 }
@@ -8112,7 +7947,6 @@ renderLibrary();
 });
 }
 initLibraryFromDB();
-initPoeModelSelects();
 });
 function rawCopy(text,btn){
 var ta=document.createElement('textarea');
